@@ -165,66 +165,90 @@ button, select, input, .cursor-pointer {
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen pb-24 font-sans selection:bg-amber-500 selection:text-black">
 
-  <!-- 頂部資訊看板 -->
-  <header class="bg-slate-900/95 backdrop-blur sticky top-0 z-40 border-b border-slate-800 px-4 py-2.5">
-    <div class="max-w-5xl mx-auto flex flex-wrap justify-between items-center gap-2">
-      <div class="flex items-center gap-2">
-        <i data-lucide="trophy" class="text-amber-400 w-5 h-5"></i>
-        <h1 class="text-base font-black bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">ToeicQuest NBA</h1>
-        <span id="onFireBadge" class="hidden text-[10px] bg-amber-500/20 border border-amber-400 text-amber-300 px-2 py-0.5 rounded-full font-bold">
-          🔥 ON FIRE (+2 OVR)
-        </span>
-        <button id="adminBadge" onclick="adminUnlockAllPlayers()" class="hidden text-[10px] bg-red-600/30 hover:bg-red-600/60 border border-red-500 text-red-300 px-2 py-0.5 rounded-full font-bold font-mono transition" title="點擊一鍵獲得所有球員">
-          ⚡ ADMIN
+ <!-- 頂部資訊看板（專為 iPhone 14 最佳化防跑版版型） -->
+  <header class="bg-slate-900/95 backdrop-blur sticky top-0 z-40 border-b border-slate-800 px-2.5 pt-[max(0.5rem,env(safe-area-inset-top))] pb-1.5 select-none">
+    <div class="max-w-5xl mx-auto flex flex-col gap-1.5">
+      
+      <!-- 第一排：Logo 標題與 ON FIRE 徽章 -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1.5">
+          <i data-lucide="trophy" class="text-amber-400 w-4 h-4"></i>
+          <h1 class="text-sm font-black bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">ToeicQuest NBA</h1>
+          <span id="onFireBadge" class="hidden text-[9px] bg-amber-500/20 border border-amber-400 text-amber-300 px-1.5 py-0.2 rounded-full font-bold">
+            🔥 ON FIRE
+          </span>
+        </div>
+        <button id="adminBadge" onclick="adminUnlockAllPlayers()" class="hidden text-[9px] bg-red-600/30 border border-red-500 text-red-300 px-2 py-0.5 rounded-full font-bold font-mono">
+          ADMIN
         </button>
       </div>
 
-      <div class="flex items-center gap-2 text-xs">
-        <div class="flex items-center gap-1 bg-slate-800 px-2.5 py-1 rounded-full border border-slate-700">
-          <span class="text-orange-400 font-bold">🔥 <span id="streakCount">1</span>天</span>
-        </div>
-        <div class="flex items-center gap-1 bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
-          <i data-lucide="ticket" class="w-3.5 h-3.5 text-amber-400"></i>
-          <span><span id="ticketCount" class="text-amber-400 font-mono font-bold">10</span>張</span>
-        </div>
-        <div class="flex items-center gap-1 bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
-          <i data-lucide="gem" class="w-3.5 h-3.5 text-pink-400"></i>
-          <span><span id="scoutPointsCount" class="text-pink-400 font-mono font-bold">0</span>點</span>
-        </div>
+      <!-- 第二排：防跑版緊湊數據欄（緊湊排列，防文字折行換行） -->
+      <div class="flex items-center justify-between gap-1 w-full text-[11px] font-mono">
+        
+        <!-- 數據區 (左側) -->
+        <div class="flex items-center gap-1 min-w-0">
+          <!-- 打卡天數 -->
+          <div class="flex items-center gap-0.5 bg-slate-800/90 px-1.5 py-0.5 rounded-lg border border-slate-700/80 flex-shrink-0">
+            <span class="text-orange-400 font-bold">🔥<span id="streakCount">1</span>天</span>
+          </div>
 
- <!-- 🛠️ 整合功能按鈕 (修正版：支援全螢幕透明防護遮罩) -->
-        <div class="relative inline-block text-left flex-shrink-0">
-          <button onclick="openTopMenu()" type="button" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-300 border border-slate-700 px-2.5 py-1 rounded-full transition text-[11px] font-bold cursor-pointer">
-            <span>🛠️ 功能</span>
-            <span class="text-[8px] font-mono text-slate-400">▼</span>
-          </button>
+          <!-- 抽卡券 -->
+          <div class="flex items-center gap-0.5 bg-slate-800/90 px-1.5 py-0.5 rounded-lg border border-slate-700/80 flex-shrink-0">
+            <i data-lucide="ticket" class="w-3 h-3 text-amber-400"></i>
+            <span class="text-amber-400 font-bold"><span id="ticketCount">10</span>🎟️</span>
+          </div>
 
-          <!-- 手機防穿透透明遮罩 (點擊選單以外的地方自動關閉) -->
-          <div id="topMenuBackdrop" onclick="closeTopMenu()" class="hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]"></div>
-
-          <!-- 展開的選單本體 (拉高 z-50 確保在最上層) -->
-          <div id="topDropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] p-2 z-50 space-y-1">
-            <button onclick="closeTopMenu(); openUpgradeModal();" type="button" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-indigo-300 hover:bg-indigo-950/60 active:bg-indigo-900 transition cursor-pointer">
-              <span class="flex items-center gap-2"><i data-lucide="star" class="w-4 h-4"></i> 升星所</span>
-              <span class="text-[10px] text-slate-500 font-mono">突破</span>
-            </button>
-            <button onclick="closeTopMenu(); openMarketModal();" type="button" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-pink-300 hover:bg-pink-950/60 active:bg-pink-900 transition cursor-pointer">
-              <span class="flex items-center gap-2"><i data-lucide="shopping-bag" class="w-4 h-4"></i> 交易所</span>
-              <span class="text-[10px] text-slate-500 font-mono">碎片</span>
-            </button>
-            <button onclick="closeTopMenu(); openChampionshipRingsModal();" type="button" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-amber-300 hover:bg-amber-950/60 active:bg-amber-900 transition cursor-pointer">
-              <span class="flex items-center gap-2"><span>💍</span> 戒指櫃</span>
-              <span id="headerRingsCount" class="font-mono bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded-full text-[9px] font-black">0</span>
-            </button>
+          <!-- 碎片點數 -->
+          <div class="flex items-center gap-0.5 bg-slate-800/90 px-1.5 py-0.5 rounded-lg border border-slate-700/80 flex-shrink-0">
+            <i data-lucide="gem" class="w-3 h-3 text-pink-400"></i>
+            <span class="text-pink-400 font-bold"><span id="scoutPointsCount">0</span>💎</span>
           </div>
         </div>
 
-        <button onclick="openRedeemModal()" class="text-amber-300 p-1 hover:text-white transition" title="兌換碼"><i data-lucide="gift" class="w-4 h-4"></i></button>
-        <button onclick="toggleNotificationDrawer()" id="btnNotificationCenter" class="relative text-slate-300 hover:text-amber-400 p-1 transition cursor-pointer" title="通知中心">
-          <i data-lucide="bell" class="w-4 h-4"></i>
-          <span id="notificationUnreadDot" class="hidden absolute -top-0.5 -right-0.5 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
-        </button>
-        <button onclick="resetGame()" class="text-rose-400 p-1 hover:text-white transition" title="重置存檔"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
+        <!-- 功能與操作按鈕 (右側) -->
+        <div class="flex items-center gap-1 flex-shrink-0">
+          
+          <!-- 🛠️ 功能選單按鈕 -->
+          <div class="relative inline-block text-left">
+            <button onclick="openTopMenu()" type="button" class="flex items-center gap-0.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-300 border border-slate-700 px-2 py-0.5 rounded-lg font-bold text-[10px] cursor-pointer">
+              <span>🛠️ 功能</span>
+              <span class="text-[8px] text-slate-400">▼</span>
+            </button>
+
+            <!-- 手機防穿透遮罩 -->
+            <div id="topMenuBackdrop" onclick="closeTopMenu()" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]"></div>
+
+            <!-- 下拉選單 -->
+            <div id="topDropdownMenu" class="hidden absolute right-0 mt-2 w-44 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-1.5 z-50 space-y-1 text-xs font-sans">
+              <button onclick="closeTopMenu(); openUpgradeModal();" type="button" class="w-full flex items-center justify-between px-2.5 py-2 rounded-xl font-bold text-indigo-300 hover:bg-indigo-950/60 active:bg-indigo-900 transition cursor-pointer">
+                <span class="flex items-center gap-2"><i data-lucide="star" class="w-3.5 h-3.5"></i> 升星所</span>
+                <span class="text-[10px] text-slate-500 font-mono">突破</span>
+              </button>
+              <button onclick="closeTopMenu(); openMarketModal();" type="button" class="w-full flex items-center justify-between px-2.5 py-2 rounded-xl font-bold text-pink-300 hover:bg-pink-950/60 active:bg-pink-900 transition cursor-pointer">
+                <span class="flex items-center gap-2"><i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i> 交易所</span>
+                <span class="text-[10px] text-slate-500 font-mono">碎片</span>
+              </button>
+              <button onclick="closeTopMenu(); openChampionshipRingsModal();" type="button" class="w-full flex items-center justify-between px-2.5 py-2 rounded-xl font-bold text-amber-300 hover:bg-amber-950/60 active:bg-amber-900 transition cursor-pointer">
+                <span class="flex items-center gap-2"><span>💍</span> 戒指櫃</span>
+                <span id="headerRingsCount" class="font-mono bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded-full text-[9px] font-black">0</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 小按鈕區 -->
+          <button onclick="openRedeemModal()" class="text-amber-300 p-1 hover:text-white transition flex-shrink-0" title="兌換碼">
+            <i data-lucide="gift" class="w-3.5 h-3.5"></i>
+          </button>
+          <button onclick="toggleNotificationDrawer()" id="btnNotificationCenter" class="relative text-slate-300 hover:text-amber-400 p-1 transition cursor-pointer flex-shrink-0" title="通知中心">
+            <i data-lucide="bell" class="w-3.5 h-3.5"></i>
+            <span id="notificationUnreadDot" class="hidden absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse"></span>
+          </button>
+          <button onclick="resetGame()" class="text-rose-400 p-1 hover:text-white transition flex-shrink-0" title="重置存檔">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
       </div>
     </div>
   </header>
