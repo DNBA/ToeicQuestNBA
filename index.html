@@ -2,8 +2,20 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 📱 1. 禁止手機縮放跳動，並開啟全螢幕安全邊距 (viewport-fit=cover) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>ToeicQuest NBA - 全能多益備戰與季後賽爭冠系統</title>
+<!-- 📱 專屬黑金奢華 App 桌面圖示 (iOS & Android 自適應) -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3CradialGradient id='bg' cx='50%25' cy='35%25' r='65%25'%3E%3Cstop offset='0%25' stop-color='%231e1b4b'/%3E%3Cstop offset='60%25' stop-color='%230f172a'/%3E%3Cstop offset='100%25' stop-color='%23020617'/%3E%3C/radialGradient%3E%3ClinearGradient id='gold' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23fef08a'/%3E%3Cstop offset='35%25' stop-color='%23f59e0b'/%3E%3Cstop offset='70%25' stop-color='%23fbbf24'/%3E%3Cstop offset='100%25' stop-color='%23b45309'/%3E%3C/linearGradient%3E%3ClinearGradient id='ball' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23fb923c'/%3E%3Cstop offset='50%25' stop-color='%23ea580c'/%3E%3Cstop offset='100%25' stop-color='%239a3412'/%3E%3C/linearGradient%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='10' result='blur'/%3E%3CfeComposite in='SourceGraphic' in2='blur' operator='over'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='512' height='512' rx='115' fill='url(%23bg)'/%3E%3Crect x='8' y='8' width='496' height='496' rx='107' fill='none' stroke='url(%23gold)' stroke-width='4' opacity='0.4'/%3E%3Ccircle cx='256' cy='160' r='60' fill='url(%23ball)' stroke='%23431407' stroke-width='3.5' filter='url(%23glow)'/%3E%3Cpath d='M196 160 Q256 160 316 160 M256 100 Q256 160 256 220 M214 118 Q256 160 214 202 M298 118 Q256 160 298 202' stroke='%23431407' stroke-width='3' fill='none' opacity='0.85'/%3E%3Cpath d='M176 180 L200 310 Q256 340 312 310 L336 180 Z' fill='url(%23gold)' filter='url(%23glow)'/%3E%3Cpath d='M180 200 Q120 220 160 270 Q190 280 196 265 M332 200 Q392 220 352 270 Q322 280 316 265' fill='none' stroke='url(%23gold)' stroke-width='10' stroke-linecap='round'/%3E%3Crect x='206' y='325' width='100' height='26' rx='6' fill='url(%23gold)'/%3E%3Cpath d='M166 360 L346 360 L360 395 L152 395 Z' fill='url(%23gold)'/%3E%3Ctext x='256' y='465' font-family='Arial Black, sans-serif' font-size='44' font-weight='900' fill='url(%23gold)' text-anchor='middle' letter-spacing='4' filter='url(%23glow)'%3ETOEIC%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3CradialGradient id='bg' cx='50%25' cy='35%25' r='65%25'%3E%3Cstop offset='0%25' stop-color='%231e1b4b'/%3E%3Cstop offset='60%25' stop-color='%230f172a'/%3E%3Cstop offset='100%25' stop-color='%23020617'/%3E%3C/radialGradient%3E%3ClinearGradient id='gold' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23fef08a'/%3E%3Cstop offset='35%25' stop-color='%23f59e0b'/%3E%3Cstop offset='70%25' stop-color='%23fbbf24'/%3E%3Cstop offset='100%25' stop-color='%23b45309'/%3E%3C/linearGradient%3E%3ClinearGradient id='ball' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23fb923c'/%3E%3Cstop offset='50%25' stop-color='%23ea580c'/%3E%3Cstop offset='100%25' stop-color='%239a3412'/%3E%3C/linearGradient%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='10' result='blur'/%3E%3CfeComposite in='SourceGraphic' in2='blur' operator='over'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='512' height='512' rx='115' fill='url(%23bg)'/%3E%3Crect x='8' y='8' width='496' height='496' rx='107' fill='none' stroke='url(%23gold)' stroke-width='4' opacity='0.4'/%3E%3Ccircle cx='256' cy='160' r='60' fill='url(%23ball)' stroke='%23431407' stroke-width='3.5' filter='url(%23glow)'/%3E%3Cpath d='M196 160 Q256 160 316 160 M256 100 Q256 160 256 220 M214 118 Q256 160 214 202 M298 118 Q256 160 298 202' stroke='%23431407' stroke-width='3' fill='none' opacity='0.85'/%3E%3Cpath d='M176 180 L200 310 Q256 340 312 310 L336 180 Z' fill='url(%23gold)' filter='url(%23glow)'/%3E%3Cpath d='M180 200 Q120 220 160 270 Q190 280 196 265 M332 200 Q392 220 352 270 Q322 280 316 265' fill='none' stroke='url(%23gold)' stroke-width='10' stroke-linecap='round'/%3E%3Crect x='206' y='325' width='100' height='26' rx='6' fill='url(%23gold)'/%3E%3Cpath d='M166 360 L346 360 L360 395 L152 395 Z' fill='url(%23gold)'/%3E%3Ctext x='256' y='465' font-family='Arial Black, sans-serif' font-size='44' font-weight='900' fill='url(%23gold)' text-anchor='middle' letter-spacing='4' filter='url(%23glow)'%3ETOEIC%3C/text%3E%3C/svg%3E">
+  <!-- 🍎 2. iOS Safari 偽 App 設定（消除網址列與底部按鈕、狀態列半透明融合） -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ToeicQuest">
+
+  <!-- 🤖 3. Android Chrome 偽 App 設定（隱藏網址列、主題顏色） -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#020617">
 <script src="./toeic1000.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -102,6 +114,53 @@
     .newspaper-unfold {
       animation: newspaperUnfold 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+button, select, input, .cursor-pointer {
+      touch-action: manipulation;
+    }
+    .modal-scroll-touch {
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+/* 🃏 Tinder 式單字滑卡樣式與動畫 */
+    .card-swipe-active {
+      transition: none !important;
+      cursor: grabbing !important;
+    }
+    .card-swipe-smooth {
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease !important;
+    }
+    .swipe-stamp {
+      position: absolute;
+      top: 12px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 900;
+      border-radius: 8px;
+      text-transform: uppercase;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 20;
+    }
+    .swipe-stamp-like {
+      right: 14px;
+      color: #34d399;
+      border: 2px solid #34d399;
+      background: rgba(6, 78, 59, 0.7);
+      transform: rotate(10deg);
+    }
+    .swipe-stamp-nope {
+      left: 14px;
+      color: #f87171;
+      border: 2px solid #f87171;
+      background: rgba(136, 19, 55, 0.7);
+      transform: rotate(-10deg);
+    }
+
+    /* 📱 行動端防誤觸 */
+    button, select, input, .cursor-pointer {
+      touch-action: manipulation;
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen pb-24 font-sans selection:bg-amber-500 selection:text-black">
@@ -133,15 +192,29 @@
           <span><span id="scoutPointsCount" class="text-pink-400 font-mono font-bold">0</span>點</span>
         </div>
 
-        <button onclick="openUpgradeModal()" class="flex items-center gap-1 bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 border border-indigo-500/50 px-2.5 py-1 rounded-full transition text-[11px] font-bold">
-          <i data-lucide="star" class="w-3 h-3"></i> 升星所
-        </button>
-        <button onclick="openMarketModal()" class="flex items-center gap-1 bg-pink-600/30 hover:bg-pink-600 text-pink-300 border border-pink-500/50 px-2.5 py-1 rounded-full transition text-[11px] font-bold">
-          <i data-lucide="shopping-bag" class="w-3 h-3"></i> 交易所
-        </button>
-        <button onclick="openChampionshipRingsModal()" id="btnRingsShowcase" class="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/35 text-amber-300 border border-amber-500/50 px-2.5 py-1 rounded-full transition text-[11px] font-bold cursor-pointer" title="總冠軍戒指展示櫃">
-          <span class="text-xs">💍</span> 戒指櫃 <span id="headerRingsCount" class="font-mono bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded-full text-[9px] font-black">0</span>
-        </button>
+        <!-- ⋯ 整合下拉功能選單 -->
+        <div class="relative inline-block text-left">
+          <button onclick="toggleTopMenu(event)" type="button" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 px-3 py-1 rounded-full transition text-xs font-bold cursor-pointer">
+            <span>🛠️ 功能</span>
+            <span class="text-[9px] font-mono text-slate-400">▼</span>
+          </button>
+
+          <!-- 點開後浮出的選單 -->
+          <div id="topDropdownMenu" class="hidden absolute right-0 mt-2 w-44 bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl p-1.5 z-50 animate-modal-in space-y-1">
+            <button onclick="openUpgradeModal(); toggleTopMenu(false);" type="button" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-indigo-300 hover:bg-indigo-950/60 transition cursor-pointer">
+              <span class="flex items-center gap-2"><i data-lucide="star" class="w-4 h-4"></i> 升星所</span>
+              <span class="text-[10px] text-slate-500 font-mono">突破</span>
+            </button>
+            <button onclick="openMarketModal(); toggleTopMenu(false);" type="button" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-pink-300 hover:bg-pink-950/60 transition cursor-pointer">
+              <span class="flex items-center gap-2"><i data-lucide="shopping-bag" class="w-4 h-4"></i> 交易所</span>
+              <span class="text-[10px] text-slate-500 font-mono">碎片</span>
+            </button>
+            <button onclick="openChampionshipRingsModal(); toggleTopMenu(false);" type="button" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-amber-300 hover:bg-amber-950/60 transition cursor-pointer">
+              <span class="flex items-center gap-2"><span>💍</span> 戒指櫃</span>
+              <span id="headerRingsCount" class="font-mono bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded-full text-[9px] font-black">0</span>
+            </button>
+          </div>
+        </div>
 
         <button onclick="openRedeemModal()" class="text-amber-300 p-1 hover:text-white transition" title="兌換碼"><i data-lucide="gift" class="w-4 h-4"></i></button>
         <button onclick="toggleNotificationDrawer()" id="btnNotificationCenter" class="relative text-slate-300 hover:text-amber-400 p-1 transition cursor-pointer" title="通知中心">
@@ -159,7 +232,7 @@
     <section id="tab-roster" class="tab-content space-y-6">
 <!-- 📜 右下角浮動任務卷軸組件 -->
   <!-- 1. 浮動圓形卷軸按鈕 (位於右下角，避開底部導航欄) -->
-  <div class="fixed bottom-20 right-4 z-40 flex flex-col items-end">
+  <div class="fixed bottom-24 right-3 sm:right-4 z-40 flex flex-col items-end">
     <!-- 未領取紅點提醒 -->
     <span id="scrollRedDot" class="hidden absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 rounded-full animate-ping z-50"></span>
     <span id="scrollBadgeCount" class="hidden absolute -top-1.5 -right-1.5 bg-rose-600 text-white font-mono font-black text-[9px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-950 z-50 shadow">!</span>
@@ -170,7 +243,7 @@
     </button>
 
     <!-- 2. 展開的羊皮卷軸面板 (點開後從按鈕上方如卷軸般展開) -->
-    <div id="questScrollDrawer" class="hidden mt-2 w-[340px] sm:w-[380px] parchment-border border-2 border-amber-500/70 rounded-3xl p-5 shadow-2xl text-slate-100 origin-bottom-right transition-all">
+    <div id="questScrollDrawer" class="hidden mt-2 w-[calc(100vw-1.5rem)] sm:w-[380px] max-w-[380px] parchment-border border-2 border-amber-500/70 rounded-3xl p-5 shadow-2xl text-slate-100 origin-bottom-right transition-all">
       
       <!-- 卷軸頂部捲軸桿裝飾 -->
       <div class="flex justify-between items-center border-b border-amber-500/30 pb-2.5 mb-3">
@@ -389,11 +462,11 @@
           </button>
         </div>
 
-        <div class="mt-6 pt-5 border-t border-slate-800 text-left">
+<div class="mt-6 pt-5 border-t border-slate-800 text-left">
           <div class="flex justify-between items-center mb-2">
             <span class="text-xs font-bold text-slate-300 font-mono">82-GAME TRACKER</span>
           </div>
-          <div id="gameGrid" class="grid grid-cols-10 sm:grid-cols-14 md:grid-cols-21 gap-1.5 p-3 bg-slate-950/90 rounded-2xl border border-slate-800/80"></div>
+          <div id="gameGrid" class="grid grid-cols-8 sm:grid-cols-12 md:grid-cols-21 gap-1 sm:gap-1.5 p-2.5 bg-slate-950/90 rounded-2xl border border-slate-800/80"></div>
         </div>
       </div>
     </section>
@@ -548,9 +621,19 @@
           </div>
         </div>
 
-<div id="flashcard" class="min-h-[140px] bg-slate-950 border border-slate-800 rounded-2xl flex flex-col items-center justify-center p-4 text-center select-none relative cursor-pointer" onclick="flipCard()">
-<div id="flashcardContent" class="w-full">
-    <p class="text-[10px] text-slate-500 mb-2 pointer-events-none">點擊卡片翻面看中文與例句</p>
+<div id="flashcard" class="min-h-[155px] bg-slate-950 border border-slate-800 rounded-2xl flex flex-col items-center justify-center p-4 text-center select-none relative cursor-pointer card-swipe-smooth overflow-hidden touch-none" onclick="handleCardClick(event)">
+  <!-- 滑動印章提示 -->
+  <span id="stampLike" class="swipe-stamp swipe-stamp-like">記住了 ✅</span>
+  <span id="stampNope" class="swipe-stamp swipe-stamp-nope">不熟 ❌</span>
+
+  <div id="flashcardContent" class="w-full pointer-events-none">
+    <p class="text-[10px] text-slate-500 mb-1.5 flex items-center justify-center gap-2">
+      <span>👈 左滑 不熟</span>
+      <span>•</span>
+      <span>點擊/上滑 翻面</span>
+      <span>•</span>
+      <span>右滑 記住 👉</span>
+    </p>
     
     <!-- 詞性徽章 + 單字 + 朗讀按鈕 (同一水平行) -->
     <div class="flex items-center justify-center gap-2 flex-wrap">
@@ -1049,7 +1132,7 @@
     </div>
   </div>
 </div>
-  <nav class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 z-40 py-2">
+ <nav class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 z-40 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
     <div class="max-w-md mx-auto grid grid-cols-5 gap-1 px-2">
       <button onclick="switchTab('roster')" class="nav-tab flex flex-col items-center gap-1 text-[10px] text-amber-400 font-bold" data-target="roster"><i data-lucide="shield" class="w-4 h-4"></i> 陣容</button>
       <button onclick="switchTab('season')" class="nav-tab flex flex-col items-center gap-1 text-[10px] text-slate-400 hover:text-slate-200" data-target="season"><i data-lucide="trophy" class="w-4 h-4"></i> 82場模擬</button>
@@ -1061,6 +1144,7 @@
   </nav>
 
   <script>
+
     /* =====================================================
        ① GAME CONFIG & DATABASE
     ===================================================== */
@@ -1406,7 +1490,21 @@ function getAudioContext() {
   return audioCtx;
 }
 
+function triggerHaptic(type) {
+  if (!navigator.vibrate) return;
+  if (type === 'heavy' || type === 'ur_ssr') {
+    navigator.vibrate([80, 40, 120]); // 💥 重磅震撼（UR/SSR大獎、翻開神卡）
+  } else if (type === 'light' || type === 'correct' || type === 'coin' || type === 'flip') {
+    navigator.vibrate(40); // ✨ 輕快短震（答對、打卡成功、金幣進帳、翻卡）
+  } else if (type === 'buzz' || type === 'error') {
+    navigator.vibrate([30, 50, 30]); // ❌ 連續兩下警告震動（答錯、三分大賽打鐵、失敗）
+  }
+}
+
 function playSound(type) {
+  // 📱 同步觸發手機觸覺震動回饋
+  triggerHaptic(type);
+
   const ctx = getAudioContext();
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -1438,7 +1536,6 @@ function playSound(type) {
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
         osc.start(now); osc.stop(now + 0.6);
       } else if (type === 'click') {
-        // 輕脆微短按鍵音 (泡泡糖點擊感)
         osc.type = 'sine';
         osc.frequency.setValueAtTime(800, now);
         osc.frequency.exponentialRampToValueAtTime(400, now + 0.04);
@@ -1446,15 +1543,13 @@ function playSound(type) {
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
         osc.start(now); osc.stop(now + 0.04);
       } else if (type === 'coin') {
-        // 雙音清脆金幣進帳聲 (B5 -> E6)
         osc.type = 'sine';
         osc.frequency.setValueAtTime(987.77, now);
         osc.frequency.setValueAtTime(1318.51, now + 0.08);
         gain.gain.setValueAtTime(0.2, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
         osc.start(now); osc.stop(now + 0.35);
-} else if (type === 'correct') {
-        // ✨ 輕快清亮的正解叮咚雙音 (C6 -> G6)
+      } else if (type === 'correct') {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(1046.50, now);
         osc.frequency.setValueAtTime(1567.98, now + 0.08);
@@ -1462,7 +1557,6 @@ function playSound(type) {
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
         osc.start(now); osc.stop(now + 0.3);
       } else if (type === 'buzz') {
-        // 錯誤/失敗低頻鋸齒波
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(150, now);
         osc.frequency.linearRampToValueAtTime(110, now + 0.18);
@@ -1470,7 +1564,6 @@ function playSound(type) {
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
         osc.start(now); osc.stop(now + 0.18);
       } else if (type === 'whistle') {
-        // 裁判雙頻刺耳短哨 (開賽感)
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(2400, now);
         osc.frequency.setValueAtTime(2480, now + 0.06);
@@ -1479,8 +1572,7 @@ function playSound(type) {
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
         osc.start(now); osc.stop(now + 0.22);
       }
-    }
-
+}
     const TEAM_DATA = {
   "ATL": [
     {
@@ -18530,7 +18622,27 @@ function createCard(basePlayer, star = 1) {
     note: `🏆 完整繼承生涯紀錄：得分 ${upgradedCard.legacy.pts || 0} 分 ｜ 冠軍戒指 💍×${upgradedCard.legacy.rings || 0}${mergedLegacy.fmvps > 0 ? ` ｜ FMVP 🏆×${mergedLegacy.fmvps} (OVR+${fmvpBonus})` : ''}`
   });
 }
+/* =====================================================
+       🛠️ 頂部收合選單控制
+    ===================================================== */
+    function toggleTopMenu(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      const menu = document.getElementById('topDropdownMenu');
+      if (!menu) return;
+      if (e === false) {
+        menu.classList.add('hidden');
+      } else {
+        menu.classList.toggle('hidden');
+      }
+    }
 
+    // 點擊畫面其他空白處時自動收起選單
+    window.addEventListener('click', (e) => {
+      const menu = document.getElementById('topDropdownMenu');
+      if (menu && !menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+      }
+    });
     function openUpgradeModal() {
       const modal = document.getElementById('upgradeModal');
       const container = document.getElementById('upgradeListContainer');
@@ -18714,14 +18826,59 @@ function isPlayerInRoster(cardId) {
       state.startingLineup[pos] = null;
       renderAll();
     }
+/* =====================================================
+       📱 手機版指定位置上陣邏輯
+    ===================================================== */
+    let currentAssignCardId = null;
 
+    function openQuickAssignModal(cardId) {
+      currentAssignCardId = cardId;
+      const card = (state.inventory || []).find(c => c && c.cardId === cardId);
+      if (!card) return;
+
+      const nameEl = document.getElementById('qaPlayerName');
+      const posEl = document.getElementById('qaPlayerPos');
+      if (nameEl) nameEl.innerText = `${card.name} (OVR ${card.ovr})`;
+      if (posEl) posEl.innerText = `原主打位置: ${(card.positions || []).join('/')}`;
+
+      const modal = document.getElementById('quickAssignModal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeQuickAssignModal() {
+      currentAssignCardId = null;
+      const modal = document.getElementById('quickAssignModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    // 指定上陣至先發 PG/SG/SF/PF/C
+    function assignToStarterSlot(targetPos) {
+      if (!currentAssignCardId) return;
+      const card = (state.inventory || []).find(c => c && c.cardId === currentAssignCardId);
+      if (!card) return;
+
+      removePlayerFromEntireRoster(card.cardId);
+      state.startingLineup[targetPos] = card;
+
+      closeQuickAssignModal();
+      renderAll();
+      showToast(`已將 ${card.name} 指派為先發 ${targetPos}！`, "success");
+    }
+
+    // 指定放入替補席
+    function assignToBenchSlot() {
+      if (!currentAssignCardId) return;
+      const id = currentAssignCardId;
+      closeQuickAssignModal();
+      addBench(id);
+    }
     function addBench(cardId) {
       const card = (state.inventory || []).find(c => c && c.cardId === cardId);
       if (!card) return;
       removePlayerFromEntireRoster(card.cardId);
       const emptyIdx = state.benchLineup.findIndex(slot => slot === null);
       if (emptyIdx === -1) { 
-        showToast("⚠️ 替補席 6 人已滿！", "warning"); 
+        showToast("替補席 6 人已滿！", "warning"); 
         return; 
       }
       state.benchLineup[emptyIdx] = card;
@@ -18735,7 +18892,7 @@ function isPlayerInRoster(cardId) {
 
     function autoSetHighestOvrLineup() {
       if (!state.inventory || state.inventory.length === 0) { 
-        showToast("⚠️ 背包內尚無球員卡！", "warning"); 
+        showToast("背包內尚無球員卡！", "warning"); 
         return; 
       }
       state.startingLineup = { PG: null, SG: null, SF: null, PF: null, C: null };
@@ -18758,7 +18915,7 @@ function isPlayerInRoster(cardId) {
         if (b) { state.benchLineup[i] = b; usedCardIds.add(b.cardId); }
       }
       renderAll();
-      showToast("⚡ 一鍵最佳陣容配置完成！", "success");
+      showToast("一鍵最佳陣容配置完成！", "success");
     }
 
     function handleCardDragStart(e, cardId) {
@@ -18868,7 +19025,7 @@ function closeMarketModal() {
       saveGame();
       renderAll();
       openMarketModal();
-      showToast(`✅ 成功轉化 ${card.name}，獲得 ${val} 點選秀碎片！`, 'success');
+      showToast(`成功轉化 ${card.name}，獲得 ${val} 點選秀碎片！`, 'success');
     }
 
     async function batchConvertCards() {
@@ -19229,7 +19386,7 @@ function renderFlashMarket() {
 
     function launchGachaWithShopAnimation(times) {
       if (!state.isAdmin && state.tickets < times) { 
-        showToast("🎟️ 抽卡券不足！完成每日多益背單字或例行賽可獲取更多！", "warning"); 
+        showToast("🎟️ 抽卡券不足！", ); 
         return; 
       }
       pendingGachaTimes = times;
@@ -21347,7 +21504,7 @@ function saveGame() {
       });
       saveGame();
       renderAll();
-      showToast(`⚡ 已成功解鎖全聯盟 30 隊共 ${state.inventory.length} 張球員卡！`, "success");
+      showToast(`已成功解鎖全聯盟 30 隊共 ${state.inventory.length} 張球員卡！`, "success");
     }
     /*
  =====================================================
@@ -21779,7 +21936,19 @@ function closePlayerDetailModal() {
         <div draggable="true" 
              ondragstart="handleCardDragStart(event, '${player.cardId}')"
              class="bg-slate-950 border ${borderClass} rounded-xl p-2.5 flex flex-col items-center justify-between text-center relative shadow cursor-grab active:cursor-grabbing hover:brightness-110 transition select-none">
-
+<!-- 在卡片按鈕區加入一鍵放入空缺先發的按鈕 -->
+<div class="grid grid-cols-2 gap-1 w-full mt-1">
+  <button onclick="quickAssignStarter('${player.cardId}')" 
+          type="button"
+          class="w-full py-1 bg-amber-500/20 active:bg-amber-500/40 text-amber-300 rounded text-[9px] font-bold transition">
+    ⚡ 先發
+  </button>
+  <button onclick="addBench('${player.cardId}')" 
+          type="button"
+          class="w-full py-1 bg-indigo-500/20 active:bg-indigo-500/40 text-indigo-300 rounded text-[9px] font-bold transition">
+    + 替補
+  </button>
+</div>
 <!-- 頂部資訊列：加入 👁️ 眼睛按鈕 -->
       <div class="flex justify-between items-center w-full text-[10px] font-mono text-slate-400">
         <div class="flex items-center gap-1 pointer-events-none">
@@ -21814,13 +21983,12 @@ function closePlayerDetailModal() {
             ${traitBadges ? `<div class="flex flex-wrap gap-1 justify-center mt-1">${traitBadges}</div>` : ''}
           </div>
 
-          <div class="w-full space-y-1 mt-1">
-            <div class="text-[9px] text-slate-400 bg-slate-900 border border-slate-800 rounded py-0.5 pointer-events-none">
-              ✋ 拖曳至先發 / 替補
-            </div>
-            <button onclick="addBench('${player.cardId}')" 
-                    class="w-full py-0.5 bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 rounded text-[9px] transition cursor-pointer">
-              + 放入替補
+<div class="w-full mt-1">
+            <button onclick="openQuickAssignModal('${player.cardId}')" 
+                    type="button"
+                    class="w-full py-1.5 bg-amber-500/20 hover:bg-amber-500/40 active:scale-95 text-amber-300 border border-amber-500/40 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
+              <span>⚡</span>
+              <span>上陣 / 指定位置</span>
             </button>
           </div>
         </div>`;
@@ -22520,7 +22688,7 @@ playSound('click');
         state.isAdmin = true; state.tickets = 999999; state.scoutPoints = 999999;
         adminUnlockAllPlayers();
         closeRedeemModal();
-        showToast("⚡ 管理員測試權限已啟用！全隊解鎖，無限抽卡與碎片！", "success");
+        showToast("管理員測試權限已啟用！全隊解鎖，無限抽卡與碎片！", "success");
         saveGame();
         renderAll();
         return;
@@ -22644,6 +22812,22 @@ function updateQuizCard() {
         lucide.createIcons();
       }
     }
+/* =====================================================
+   🃏 單字卡 Tinder 左右滑動手勢與翻面系統
+===================================================== */
+let isCardSwiping = false;
+let startTouchX = 0;
+let startTouchY = 0;
+let currentDeltaX = 0;
+let currentDeltaY = 0;
+let hasSwipedAway = false;
+
+// 點擊翻面判定（排除滑動過程中的點擊）
+function handleCardClick(e) {
+  if (isCardSwiping || Math.abs(currentDeltaX) > 10 || Math.abs(currentDeltaY) > 10) return;
+  flipCard();
+}
+
 function flipCard() {
   if (state.toeic.isSpellingMode) return;
   const meaningEl = document.getElementById('flashMeaning');
@@ -22653,21 +22837,137 @@ function flipCard() {
   isFlipped = !isFlipped;
   meaningEl.classList.toggle('hidden', !isFlipped);
   if (exampleEl) exampleEl.classList.toggle('hidden', !isFlipped);
-}    function checkSpellingAnswer() {
-      const item = getCurrentQuizWord();
-      if (!item) return;
-      const ans = document.getElementById('spellingInput').value.trim().toLowerCase();
-      if (ans === item.word.toLowerCase()) {
-        playSound('correct'); // 👈 新增：拼字正確專屬音效
-        confetti({ particleCount: 30, spread: 50 });
-        showToast("🎉 拼字完全正確！太棒了！", "success");
-        answerQuiz(true);
-      } else {
-        playSound('buzz'); // 👈 新增：拼字錯誤音效
-        showToast(`❌ 答錯囉！正確拼法是：${item.word}`, "error");
-        answerQuiz(false);
-      }
+  playSound('flip');
+}
+
+// 初始化觸控手勢監聽
+function initFlashcardTouchGestures() {
+  const card = document.getElementById('flashcard');
+  const stampLike = document.getElementById('stampLike');
+  const stampNope = document.getElementById('stampNope');
+  if (!card) return;
+
+  card.addEventListener('touchstart', (e) => {
+    if (state.toeic.isSpellingMode) return;
+    const touch = e.touches[0];
+    startTouchX = touch.clientX;
+    startTouchY = touch.clientY;
+    currentDeltaX = 0;
+    currentDeltaY = 0;
+    hasSwipedAway = false;
+    isCardSwiping = false;
+
+    card.classList.remove('card-swipe-smooth');
+    card.classList.add('card-swipe-active');
+  }, { passive: true });
+
+  card.addEventListener('touchmove', (e) => {
+    if (state.toeic.isSpellingMode || hasSwipedAway) return;
+    const touch = e.touches[0];
+    currentDeltaX = touch.clientX - startTouchX;
+    currentDeltaY = touch.clientY - startTouchY;
+
+    if (Math.abs(currentDeltaX) > 8 || Math.abs(currentDeltaY) > 8) {
+      isCardSwiping = true;
     }
+
+    // 左右跟手旋轉位移
+    const rotation = currentDeltaX * 0.08;
+    card.style.transform = `translate3d(${currentDeltaX}px, ${currentDeltaY * 0.3}px, 0) rotate(${rotation}deg)`;
+
+    // 浮水印即時淡入
+    if (currentDeltaX > 25) {
+      const op = Math.min(1, (currentDeltaX - 25) / 60);
+      if (stampLike) stampLike.style.opacity = op;
+      if (stampNope) stampNope.style.opacity = 0;
+    } else if (currentDeltaX < -25) {
+      const op = Math.min(1, (Math.abs(currentDeltaX) - 25) / 60);
+      if (stampNope) stampNope.style.opacity = op;
+      if (stampLike) stampLike.style.opacity = 0;
+    } else {
+      if (stampLike) stampLike.style.opacity = 0;
+      if (stampNope) stampNope.style.opacity = 0;
+    }
+  }, { passive: true });
+
+  card.addEventListener('touchend', () => {
+    if (state.toeic.isSpellingMode || hasSwipedAway) return;
+
+    card.classList.remove('card-swipe-active');
+    card.classList.add('card-swipe-smooth');
+
+    const thresholdX = 85; // 左右滑動觸發門檻 (px)
+    const thresholdY = -65; // 向上滑動翻面門檻 (px)
+
+    // 1. 向上滑動 -> 快速翻面看中文
+    if (currentDeltaY < thresholdY && Math.abs(currentDeltaX) < 50) {
+      resetCardPos();
+      flipCard();
+      return;
+    }
+
+    // 2. 向右滑動 -> 記住了 ✅
+    if (currentDeltaX > thresholdX) {
+      hasSwipedAway = true;
+      card.style.transform = `translate3d(120vw, ${currentDeltaY}px, 0) rotate(25deg)`;
+      card.style.opacity = '0';
+      if (stampLike) stampLike.style.opacity = 1;
+      setTimeout(() => {
+        answerQuiz(true);
+        resetCardPos();
+      }, 200);
+      return;
+    }
+
+    // 3. 向左滑動 -> 不熟 ❌
+    if (currentDeltaX < -thresholdX) {
+      hasSwipedAway = true;
+      card.style.transform = `translate3d(-120vw, ${currentDeltaY}px, 0) rotate(-25deg)`;
+      card.style.opacity = '0';
+      if (stampNope) stampNope.style.opacity = 1;
+      setTimeout(() => {
+        answerQuiz(false);
+        resetCardPos();
+      }, 200);
+      return;
+    }
+
+    // 未達門檻，彈回原位
+    resetCardPos();
+  });
+
+  function resetCardPos() {
+    card.style.transform = '';
+    card.style.opacity = '';
+    if (stampLike) stampLike.style.opacity = 0;
+    if (stampNope) stampNope.style.opacity = 0;
+    currentDeltaX = 0;
+    currentDeltaY = 0;
+    setTimeout(() => { isCardSwiping = false; }, 80);
+  }
+}
+
+// 頁面載入後自動註冊觸控監聽
+document.addEventListener('DOMContentLoaded', () => {
+  initFlashcardTouchGestures();
+});
+setTimeout(initFlashcardTouchGestures, 500);
+
+function checkSpellingAnswer() {
+  const item = getCurrentQuizWord();
+  if (!item) return;
+  const ans = document.getElementById('spellingInput').value.trim().toLowerCase();
+  if (ans === item.word.toLowerCase()) {
+    playSound('correct');
+    confetti({ particleCount: 30, spread: 50 });
+    showToast("拼字完全正確！太棒了！", "success");
+    answerQuiz(true);
+  } else {
+    playSound('buzz');
+    showToast(`答錯囉！正確拼法是：${item.word}`, "error");
+    answerQuiz(false);
+  }
+}
     function answerQuiz(isCorrect) {
       const item = getCurrentQuizWord();
       if (!item) return;
@@ -24402,6 +24702,28 @@ function closeRingDetailModal() {
   const modal = document.getElementById('ringDetailModal');
   if (modal) modal.classList.add('hidden');
 }
+function quickAssignStarter(cardId) {
+  const card = (state.inventory || []).find(c => c && c.cardId === cardId);
+  if (!card) return;
+  
+  // 優先放入其第一位置的空缺，若已被占據則尋找任意空缺
+  const primaryPos = (card.positions && card.positions[0]) || 'PG';
+  removePlayerFromEntireRoster(card.cardId);
+
+  if (!state.startingLineup[primaryPos]) {
+    state.startingLineup[primaryPos] = card;
+  } else {
+    const emptyPos = ['PG', 'SG', 'SF', 'PF', 'C'].find(p => !state.startingLineup[p]);
+    if (emptyPos) {
+      state.startingLineup[emptyPos] = card;
+    } else {
+      // 若全滿則頂替原第一位置
+      state.startingLineup[primaryPos] = card;
+    }
+  }
+  renderAll();
+  showToast(`${card.name} 已指派先發！`, "success");
+}
 
  </script>
 <!-- 🏀 季後賽逐場動態播報彈窗 -->
@@ -24427,9 +24749,9 @@ function closeRingDetailModal() {
     </div>
   </div>
 </div>
-    <!-- 📊 擬真 NBA Box Score 戰報彈窗 -->
-    <div id="gameBoxScoreModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-2xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto animate-modal-in">
+  <!-- 📊 擬真 NBA Box Score 戰報彈窗 -->
+<div id="gameBoxScoreModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-2xl p-5 shadow-2xl space-y-4 max-h-[85dvh] modal-scroll-touch overflow-y-auto animate-modal-in">
         
         <div class="flex justify-between items-center border-b border-slate-800 pb-3">
           <div class="flex items-center gap-2">
@@ -24523,7 +24845,7 @@ function closeRingDetailModal() {
     </div>
 <!-- 🔍 球員真實數據詳情彈窗 -->
 <div id="playerDetailModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-lg p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto animate-modal-in">
+  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-lg p-5 shadow-2xl space-y-4 max-h-[85dvh] modal-scroll-touch overflow-y-auto animate-modal-in">
     <!-- 頂部卡片資訊 -->
     <div class="flex justify-between items-start border-b border-slate-800 pb-3 gap-3">
       <div class="space-y-1.5 flex-1 min-w-0">
@@ -25051,6 +25373,33 @@ function closeRingDetailModal() {
     </button>
   </div>
 </div>
+<!-- 📱 手機專用：點擊卡片指定上陣位置選單 -->
+<div id="quickAssignModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[115] hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+  <div class="bg-slate-900 border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-3 animate-modal-in">
+    <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+      <div>
+        <h4 id="qaPlayerName" class="text-sm font-black text-white">指定球員上陣</h4>
+        <p id="qaPlayerPos" class="text-[10px] text-amber-400 font-mono">原位置: PG</p>
+      </div>
+      <button onclick="closeQuickAssignModal()" type="button" class="text-slate-400 hover:text-white p-1 text-sm font-bold cursor-pointer">✕</button>
+    </div>
 
+    <div class="space-y-1.5 text-xs">
+      <span class="text-[10px] text-slate-400 font-bold block">⭐️ 指定先發位置 (Starting 5)</span>
+      <div class="grid grid-cols-5 gap-1.5 font-mono">
+        <button onclick="assignToStarterSlot('PG')" type="button" class="py-2.5 bg-slate-950 hover:bg-amber-500 hover:text-slate-950 border border-slate-800 rounded-xl font-bold transition">PG</button>
+        <button onclick="assignToStarterSlot('SG')" type="button" class="py-2.5 bg-slate-950 hover:bg-amber-500 hover:text-slate-950 border border-slate-800 rounded-xl font-bold transition">SG</button>
+        <button onclick="assignToStarterSlot('SF')" type="button" class="py-2.5 bg-slate-950 hover:bg-amber-500 hover:text-slate-950 border border-slate-800 rounded-xl font-bold transition">SF</button>
+        <button onclick="assignToStarterSlot('PF')" type="button" class="py-2.5 bg-slate-950 hover:bg-amber-500 hover:text-slate-950 border border-slate-800 rounded-xl font-bold transition">PF</button>
+        <button onclick="assignToStarterSlot('C')" type="button" class="py-2.5 bg-slate-950 hover:bg-amber-500 hover:text-slate-950 border border-slate-800 rounded-xl font-bold transition">C</button>
+      </div>
+
+      <span class="text-[10px] text-slate-400 font-bold block pt-1.5">🛡️ 或是放入板凳</span>
+      <button onclick="assignToBenchSlot()" type="button" class="w-full py-2.5 bg-indigo-950/60 hover:bg-indigo-900 border border-indigo-700/50 text-indigo-300 font-bold rounded-xl transition">
+        + 放入替補席 (Bench 6)
+      </button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
