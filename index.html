@@ -8,6 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
     .rainbow-glow { box-shadow: 0 0 20px rgba(236, 72, 153, 0.7), inset 0 0 10px rgba(59, 130, 246, 0.5); border-color: #ec4899 !important; }
     .gold-glow { box-shadow: 0 0 18px rgba(245, 158, 11, 0.6), inset 0 0 8px rgba(245, 158, 11, 0.3); border-color: #f59e0b !important; }
@@ -48,6 +49,59 @@
       box-shadow: 0 0 25px rgba(245, 158, 11, 0.25), inset 0 0 15px rgba(0, 0, 0, 0.6);
       background: linear-gradient(180deg, #181512 0%, #0f1117 100%);
     }
+
+    /* 統一 Game Modal, Overlay & Toast 視覺規範 */
+    @keyframes modalScaleIn {
+      0% { opacity: 0; transform: scale(0.93) translateY(8px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes toastSlideIn {
+      0% { opacity: 0; transform: translateY(-16px) scale(0.96); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes toastSlideOut {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-12px) scale(0.94); }
+    }
+    @keyframes rewardGlow {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.08); opacity: 0.95; }
+    }
+    .animate-modal-in { animation: modalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-toast-in { animation: toastSlideIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-toast-out { animation: toastSlideOut 0.2s cubic-bezier(0.4, 0, 1, 1) forwards; }
+    .reward-glow-pulse { animation: rewardGlow 2.4s ease-in-out infinite; }
+
+    /* 💍 3D 總冠軍戒指與奪冠特刊視覺動態 */
+    @keyframes ringFloat3D {
+      0%, 100% { transform: translateY(0px) rotateX(14deg) rotateY(-10deg); }
+      50% { transform: translateY(-7px) rotateX(18deg) rotateY(12deg); }
+    }
+    .ring-float-3d {
+      animation: ringFloat3D 4.5s ease-in-out infinite;
+      transform-style: preserve-3d;
+    }
+    @keyframes gemSparkleGlow {
+      0%, 100% { filter: brightness(1) drop-shadow(0 0 8px rgba(245, 158, 11, 0.6)); }
+      50% { filter: brightness(1.3) drop-shadow(0 0 20px rgba(245, 158, 11, 0.95)); }
+    }
+    .gem-sparkle { animation: gemSparkleGlow 2s ease-in-out infinite; }
+    @keyframes goldFoilShimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .fmvp-gold-badge {
+      background: linear-gradient(110deg, #d97706 0%, #fef08a 35%, #f59e0b 60%, #fef08a 85%, #b45309 100%);
+      background-size: 200% 100%;
+      animation: goldFoilShimmer 3.2s linear infinite;
+    }
+    @keyframes newspaperUnfold {
+      0% { opacity: 0; transform: scale(0.88) translateY(14px) rotate(-1.5deg); }
+      100% { opacity: 1; transform: scale(1) translateY(0) rotate(0deg); }
+    }
+    .newspaper-unfold {
+      animation: newspaperUnfold 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen pb-24 font-sans selection:bg-amber-500 selection:text-black">
@@ -85,9 +139,16 @@
         <button onclick="openMarketModal()" class="flex items-center gap-1 bg-pink-600/30 hover:bg-pink-600 text-pink-300 border border-pink-500/50 px-2.5 py-1 rounded-full transition text-[11px] font-bold">
           <i data-lucide="shopping-bag" class="w-3 h-3"></i> 交易所
         </button>
+        <button onclick="openChampionshipRingsModal()" id="btnRingsShowcase" class="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/35 text-amber-300 border border-amber-500/50 px-2.5 py-1 rounded-full transition text-[11px] font-bold cursor-pointer" title="總冠軍戒指展示櫃">
+          <span class="text-xs">💍</span> 戒指櫃 <span id="headerRingsCount" class="font-mono bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded-full text-[9px] font-black">0</span>
+        </button>
 
-        <button onclick="openRedeemModal()" class="text-amber-300 p-1 hover:text-white" title="兌換碼"><i data-lucide="gift" class="w-4 h-4"></i></button>
-        <button onclick="resetGame()" class="text-rose-400 p-1 hover:text-white" title="重置存檔"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
+        <button onclick="openRedeemModal()" class="text-amber-300 p-1 hover:text-white transition" title="兌換碼"><i data-lucide="gift" class="w-4 h-4"></i></button>
+        <button onclick="toggleNotificationDrawer()" id="btnNotificationCenter" class="relative text-slate-300 hover:text-amber-400 p-1 transition cursor-pointer" title="通知中心">
+          <i data-lucide="bell" class="w-4 h-4"></i>
+          <span id="notificationUnreadDot" class="hidden absolute -top-0.5 -right-0.5 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
+        </button>
+        <button onclick="resetGame()" class="text-rose-400 p-1 hover:text-white transition" title="重置存檔"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
       </div>
     </div>
   </header>
@@ -1005,6 +1066,333 @@
     ===================================================== */
     const STORAGE_KEY = "toeicquest_nba_save_v1";
     const GACHA_RATES = { UR: 1, SSR: 3, SR: 10, R: 15, N: 71 };
+
+    /* =====================================================
+       🌟 統一 GAME MODAL, CONFIRM, REWARD, TOAST & NOTIFICATION SYSTEM (V4.1 UI 標準化規範)
+    ===================================================== */
+    // 1. 🍞 Toast 輕量提示系統 (P2)
+    function showToast(message, type = 'info', duration = 3000) {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      const typeStyles = {
+        success: 'bg-slate-900/95 border-emerald-500/50 text-emerald-300 shadow-[0_4px_20px_rgba(16,185,129,0.25)]',
+        warning: 'bg-slate-900/95 border-amber-500/50 text-amber-300 shadow-[0_4px_20px_rgba(245,158,11,0.25)]',
+        error: 'bg-slate-900/95 border-rose-500/50 text-rose-300 shadow-[0_4px_20px_rgba(244,63,94,0.25)]',
+        info: 'bg-slate-900/95 border-indigo-500/50 text-indigo-200 shadow-[0_4px_20px_rgba(99,102,241,0.25)]'
+      };
+      const iconMap = {
+        success: '✅',
+        warning: '⚠️',
+        error: '❌',
+        info: 'ℹ️'
+      };
+
+      const styleClass = typeStyles[type] || typeStyles.info;
+      const icon = iconMap[type] || iconMap.info;
+
+      toast.className = `pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-xs font-bold tracking-wide backdrop-blur-md animate-toast-in transition-all cursor-pointer ${styleClass}`;
+      toast.innerHTML = `<span>${icon}</span><span class="flex-1">${message}</span>`;
+
+      toast.onclick = () => {
+        toast.classList.add('animate-toast-out');
+        setTimeout(() => toast.remove(), 200);
+      };
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.classList.add('animate-toast-out');
+          setTimeout(() => toast.remove(), 200);
+        }
+      }, duration);
+    }
+
+    // 2. 🔔 統一系統彈窗 (P0: Game Modal / Alert)
+    let currentModalConfirmCallback = null;
+    function showGameAlert({ title = '系統通知', message = '', type = 'info', buttonText = '確定', onConfirm = null }) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('unifiedGameModal');
+        const titleEl = document.getElementById('gameModalTitle');
+        const msgEl = document.getElementById('gameModalMessage');
+        const iconEl = document.getElementById('gameModalIcon');
+        const iconWrapper = document.getElementById('gameModalIconWrapper');
+        const btn = document.getElementById('gameModalConfirmBtn');
+
+        if (!modal) {
+          resolve();
+          return;
+        }
+
+        const typeConfig = {
+          success: { icon: '🎉', border: 'border-emerald-500/30 bg-emerald-500/15 text-emerald-400' },
+          warning: { icon: '⚠️', border: 'border-amber-500/30 bg-amber-500/15 text-amber-400' },
+          error: { icon: '❌', border: 'border-rose-500/30 bg-rose-500/15 text-rose-400' },
+          info: { icon: 'ℹ️', border: 'border-indigo-500/30 bg-indigo-500/15 text-indigo-400' }
+        };
+        const cfg = typeConfig[type] || typeConfig.info;
+
+        if (iconEl) iconEl.innerText = cfg.icon;
+        if (iconWrapper) iconWrapper.className = `w-14 h-14 mx-auto rounded-2xl border flex items-center justify-center text-3xl ${cfg.border}`;
+        if (titleEl) titleEl.innerText = title;
+        if (msgEl) msgEl.innerText = message;
+        if (btn) btn.innerText = buttonText;
+
+        currentModalConfirmCallback = () => {
+          closeGameModal();
+          if (typeof onConfirm === 'function') onConfirm();
+          resolve();
+        };
+
+        modal.classList.remove('hidden');
+      });
+    }
+
+    function closeGameModal() {
+      const modal = document.getElementById('unifiedGameModal');
+      if (modal) modal.classList.add('hidden');
+      if (currentModalConfirmCallback) {
+        const cb = currentModalConfirmCallback;
+        currentModalConfirmCallback = null;
+        cb();
+      }
+    }
+
+    // 3. ❓ 統一確認彈窗 (P1: Game Confirm Dialog - 取代原生 confirm)
+    let currentConfirmResolver = null;
+    function showGameConfirm({ title = '請確認操作', message = '', confirmText = '確定執行', cancelText = '取消', type = 'warning', onConfirm = null, onCancel = null }) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('unifiedConfirmModal');
+        const titleEl = document.getElementById('confirmModalTitle');
+        const msgEl = document.getElementById('confirmModalMessage');
+        const iconEl = document.getElementById('confirmModalIcon');
+        const iconWrapper = document.getElementById('confirmModalIconWrapper');
+        const okBtn = document.getElementById('confirmModalOkBtn');
+        const cancelBtn = document.getElementById('confirmModalCancelBtn');
+
+        if (!modal) {
+          resolve(false);
+          return;
+        }
+
+        if (type === 'danger') {
+          if (iconEl) iconEl.innerText = '🚨';
+          if (iconWrapper) iconWrapper.className = 'w-14 h-14 mx-auto rounded-2xl border border-rose-500/30 bg-rose-500/15 text-rose-400 flex items-center justify-center text-3xl';
+          if (okBtn) okBtn.className = 'flex-1 bg-rose-600 hover:bg-rose-500 text-white font-black py-2.5 rounded-xl text-xs transition cursor-pointer';
+        } else {
+          if (iconEl) iconEl.innerText = '⚠️';
+          if (iconWrapper) iconWrapper.className = 'w-14 h-14 mx-auto rounded-2xl border border-amber-500/30 bg-amber-500/15 text-amber-400 flex items-center justify-center text-3xl';
+          if (okBtn) okBtn.className = 'flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition cursor-pointer';
+        }
+
+        if (titleEl) titleEl.innerText = title;
+        if (msgEl) msgEl.innerText = message;
+        if (okBtn) okBtn.innerText = confirmText;
+        if (cancelBtn) cancelBtn.innerText = cancelText;
+
+        currentConfirmResolver = resolve;
+
+        okBtn.onclick = () => {
+          modal.classList.add('hidden');
+          if (typeof onConfirm === 'function') onConfirm();
+          if (currentConfirmResolver) currentConfirmResolver(true);
+          currentConfirmResolver = null;
+        };
+
+        cancelBtn.onclick = () => {
+          modal.classList.add('hidden');
+          if (typeof onCancel === 'function') onCancel();
+          if (currentConfirmResolver) currentConfirmResolver(false);
+          currentConfirmResolver = null;
+        };
+
+        modal.classList.remove('hidden');
+      });
+    }
+
+    // 4. 🎁 統一高規格獎勵結算彈窗 (P1: Reward Window)
+    let currentRewardClaimCallback = null;
+    function showRewardModal({ title = '獲得獎勵！', subtitle = '', rewards = [], note = '', onClaim = null }) {
+      const modal = document.getElementById('unifiedRewardModal');
+      const titleEl = document.getElementById('rewardModalTitle');
+      const subEl = document.getElementById('rewardModalSubtitle');
+      const listEl = document.getElementById('rewardModalList');
+      const noteBox = document.getElementById('rewardModalNoteBox');
+
+      if (!modal) return;
+
+      if (titleEl) titleEl.innerText = title;
+      if (subEl) subEl.innerText = subtitle;
+
+      if (listEl) {
+        listEl.innerHTML = rewards.map(r => `
+          <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
+            <span class="text-3xl mb-1">${r.icon || '🎁'}</span>
+            <span class="text-base font-black font-mono text-amber-400">${r.amount || ''}</span>
+            <span class="text-[11px] text-slate-400 font-bold">${r.name || ''}</span>
+          </div>
+        `).join('');
+      }
+
+      if (noteBox) {
+        if (note) {
+          noteBox.innerText = note;
+          noteBox.classList.remove('hidden');
+        } else {
+          noteBox.classList.add('hidden');
+        }
+      }
+
+      currentRewardClaimCallback = onClaim;
+
+      // 觸發慶祝彩帶
+      if (typeof confetti === 'function') {
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      }
+      if (typeof playSound === 'function') {
+        playSound('ur_ssr');
+      }
+
+      modal.classList.remove('hidden');
+
+      // 加入通知中心動態
+      addNotification(title, subtitle + (rewards.length ? ` (${rewards.map(r => `${r.name} ${r.amount}`).join('、')})` : ''), 'reward');
+    }
+
+    function closeRewardModal() {
+      const modal = document.getElementById('unifiedRewardModal');
+      if (modal) modal.classList.add('hidden');
+      if (typeof currentRewardClaimCallback === 'function') {
+        const cb = currentRewardClaimCallback;
+        currentRewardClaimCallback = null;
+        cb();
+      }
+    }
+
+    // 5. ⏳ 統一載入運算遮罩 (P2: Loading / Processing Indicator)
+    function showLoading(text = '運算模擬中...') {
+      const el = document.getElementById('loadingOverlay');
+      const textEl = document.getElementById('loadingOverlayText');
+      if (textEl) textEl.innerText = text;
+      if (el) el.classList.remove('hidden');
+    }
+
+    function hideLoading() {
+      const el = document.getElementById('loadingOverlay');
+      if (el) el.classList.add('hidden');
+    }
+
+    // 6. 📬 通知中心 (P2: Notification Center)
+    function addNotification(title, message, type = 'info') {
+      if (!window.state) return;
+      if (!state.notifications) state.notifications = [];
+      state.notifications.unshift({
+        id: 'ntf_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        title,
+        message,
+        type,
+        timestamp: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+      });
+      if (state.notifications.length > 30) state.notifications.pop();
+
+      const dot = document.getElementById('notificationUnreadDot');
+      if (dot) dot.classList.remove('hidden');
+
+      renderNotifications();
+    }
+
+    function renderNotifications() {
+      const list = document.getElementById('notificationList');
+      if (!list) return;
+
+      const items = (window.state && state.notifications) ? state.notifications : [];
+      if (items.length === 0) {
+        list.innerHTML = `<div class="text-center text-slate-500 py-10 font-bold">目前無新動態與通知</div>`;
+        return;
+      }
+
+      list.innerHTML = items.map(n => `
+        <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800/80 space-y-1">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-amber-400 text-xs">${n.title}</span>
+            <span class="text-[10px] text-slate-500 font-mono">${n.timestamp}</span>
+          </div>
+          <p class="text-slate-300 text-[11px] leading-relaxed">${n.message}</p>
+        </div>
+      `).join('');
+    }
+
+    function toggleNotificationDrawer(forceOpen = null) {
+      const drawer = document.getElementById('notificationDrawer');
+      const dot = document.getElementById('notificationUnreadDot');
+      if (!drawer) return;
+
+      const isOpen = !drawer.classList.contains('hidden');
+      const shouldOpen = forceOpen !== null ? forceOpen : !isOpen;
+
+      if (shouldOpen) {
+        renderNotifications();
+        drawer.classList.remove('hidden');
+        if (dot) dot.classList.add('hidden');
+      } else {
+        drawer.classList.add('hidden');
+      }
+    }
+
+    function clearAllNotifications() {
+      if (window.state) {
+        state.notifications = [];
+        saveGame();
+      }
+      renderNotifications();
+    }
+
+    // 7. 📊 統一 Box Score 視窗開關
+    function closeGameBoxScoreModal() {
+      const boxModal = document.getElementById('gameBoxScoreModal');
+      if (boxModal) {
+        boxModal.style.display = 'none';
+        boxModal.classList.add('hidden');
+      }
+    }
+
+    // 8. 🎹 全局 Esc 按鍵與遮罩點擊處理 (統一 Game Overlay 互動規範)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const priorityModals = [
+          { id: 'championshipCelebrationModal', close: closeChampionshipCelebration },
+          { id: 'championshipRingsModal', close: closeChampionshipRingsModal },
+          { id: 'unifiedRewardModal', close: closeRewardModal },
+          { id: 'unifiedConfirmModal', close: () => { const btn = document.getElementById('confirmModalCancelBtn'); if (btn) btn.click(); } },
+          { id: 'unifiedGameModal', close: closeGameModal },
+          { id: 'notificationDrawer', close: () => toggleNotificationDrawer(false) },
+          { id: 'gameBoxScoreModal', close: closeGameBoxScoreModal },
+          { id: 'playerDetailModal', close: closePlayerDetailModal },
+          { id: 'badgeGuideModal', close: closeBadgeGuideModal },
+          { id: 'upgradeModal', close: closeUpgradeModal },
+          { id: 'marketModal', close: closeMarketModal },
+          { id: 'binderModal', close: closeBinderModal },
+          { id: 'redeemModal', close: closeRedeemModal },
+          { id: 'playoffBracketModal', close: closePlayoffBracketModal },
+          { id: 'threePtModal', close: closeThreePointContest }
+        ];
+
+        for (const m of priorityModals) {
+          const el = document.getElementById(m.id);
+          if (el && !el.classList.contains('hidden') && el.style.display !== 'none') {
+            m.close();
+            break;
+          }
+        }
+      }
+    });
+
+    // 全局攔截原生 alert，自動導向統一 Game Alert
+    window.alert = function(msg) {
+      showGameAlert({ title: '系統通知', message: String(msg) });
+    };
 
 let audioCtx = null;
 
@@ -17871,7 +18259,11 @@ ALL_30_TEAMS.forEach(team => {
       "Alex Caruso": { type: "3d", label: "破壞戰術抄截狂人", badge: "⚡拚命三郎" },
       "OG Anunoby": { type: "3d", label: "重型側翼封鎖大閘", badge: "🧱外線封殺" },
       "Derrick White": { type: "3d", label: "全能冠軍綠葉後衛", badge: "🧠高球商防守" },
-      "Herb Jones": { type: "3d", label: "長臂抄截阻截器", badge: "🪃直升機抄截" }
+      "Herb Jones": { type: "3d", label: "長臂抄截阻截器", badge: "🪃直升機抄截" },
+
+      // 👑 歷史傳奇巨星 (Historic Legends)
+      "Kobe Bryant ('10)": { type: "shooter", label: "黑曼巴", badge: "🐍曼巴精神" },
+      "Kobe Bryant": { type: "shooter", label: "黑曼巴", badge: "🐍曼巴精神" }
     };
 
     // 自動判斷球員特點（若不在清單中，根據位置與能力值智能賦予標籤）
@@ -17910,8 +18302,8 @@ ALL_30_TEAMS.forEach(team => {
       return `card_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     }
 
-    function calculateCardOvr(baseOvr, star) {
-      return (Number(baseOvr) || 70) + Math.max(0, (Number(star || 1) - 1) * 2);
+    function calculateCardOvr(baseOvr, star, fmvpBonus = 0) {
+      return (Number(baseOvr) || 70) + Math.max(0, (Number(star || 1) - 1) * 2) + (Number(fmvpBonus) || 0);
     }
 
     // 🌟 定義老將導師與新秀球員名單
@@ -17928,9 +18320,10 @@ ALL_30_TEAMS.forEach(team => {
 
 function createCard(basePlayer, star = 1) {
   const s = Number(star) || 1;
-  // 🌟 優先取 real_ovr / realOvr
-  const baseOvr = Number(basePlayer.realOvr || basePlayer.real_ovr || basePlayer.baseOvr || basePlayer.ovr || 70);
+  const baseOvr = Number(basePlayer.baseOvr || basePlayer.ovr || basePlayer.realOvr || basePlayer.real_ovr || 70);
+  const realOvr = Number(basePlayer.realOvr || basePlayer.real_ovr || baseOvr);
   const name = String(basePlayer.name || '').trim();
+  const fmvpBonus = Number(basePlayer.fmvpBonus || basePlayer.legacy?.fmvps || 0);
   
   return {
     cardId: createCardId(),
@@ -17938,8 +18331,11 @@ function createCard(basePlayer, star = 1) {
     team: String(basePlayer.team || '').trim(),
     positions: Array.isArray(basePlayer.positions) ? [...basePlayer.positions] : (basePlayer.pos ? [...basePlayer.pos] : ['PG']),
     baseOvr: baseOvr,
-    realOvr: baseOvr,
-    ovr: calculateCardOvr(baseOvr, s),
+    realOvr: realOvr,
+    real_ovr: realOvr,
+    fmvpBonus: fmvpBonus,
+    isFmvp: !!(basePlayer.isFmvp || fmvpBonus > 0),
+    ovr: calculateCardOvr(baseOvr, s, fmvpBonus),
     rarity: basePlayer.rarity || determineRarityByOvr(baseOvr),
     nbaId: basePlayer.nbaId || basePlayer.id || 0,
     stars: s,
@@ -17949,7 +18345,7 @@ function createCard(basePlayer, star = 1) {
     basic: basePlayer.basic ? { ...basePlayer.basic } : null,
     advanced: basePlayer.advanced ? { ...basePlayer.advanced } : null,
     legacy: {
-      seasons: 0, games: 0, pts: 0, reb: 0, ast: 0, rings: 0, mvps: 0, traits: []
+      seasons: 0, games: 0, pts: 0, reb: 0, ast: 0, rings: 0, mvps: 0, fmvps: fmvpBonus, traits: []
     },
     acquiredAt: Date.now()
   };
@@ -18073,7 +18469,7 @@ function createCard(basePlayer, star = 1) {
 
   // 2. 檢驗張數
   if (matches.length < 2) {
-    alert(`❌ ${targetName} ★${targetStar} 卡片不足！\n\n目前持有：${matches.length} 張\n升星需要：2 張`);
+    showToast(`❌ ${targetName} ★${targetStar} 卡片不足（持有 ${matches.length}/2 張）！`, 'warning');
     return;
   }
 
@@ -18093,6 +18489,7 @@ function createCard(basePlayer, star = 1) {
     ast: Math.max(leg1.ast || 0, leg2.ast || 0),
     rings: Math.max(leg1.rings || 0, leg2.rings || 0),
     mvps: Math.max(leg1.mvps || 0, leg2.mvps || 0),
+    fmvps: Math.max(leg1.fmvps || 0, leg2.fmvps || 0),
     // 聯集去重所有已解鎖的特質（例如【得分機器】、【冠軍成員】）
     traits: Array.from(new Set([...(leg1.traits || []), ...(leg2.traits || [])]))
   };
@@ -18104,6 +18501,12 @@ function createCard(basePlayer, star = 1) {
   // 5. 建立升星新卡並將累積紀錄完整注入
   const upgradedCard = createCard(card1, targetStar + 1);
   upgradedCard.legacy = mergedLegacy; // 🌟 關鍵：將舊紀錄完整繼承回來！
+
+  // 🌟 繼承 FMVP 燙金印記與永久 OVR 提升
+  const fmvpBonus = Math.max(card1.fmvpBonus || 0, card2.fmvpBonus || 0, mergedLegacy.fmvps || 0);
+  upgradedCard.fmvpBonus = fmvpBonus;
+  upgradedCard.isFmvp = !!(card1.isFmvp || card2.isFmvp || fmvpBonus > 0);
+  upgradedCard.ovr = calculateCardOvr(upgradedCard.baseOvr, upgradedCard.stars, fmvpBonus);
 
   // 如果原本解鎖過【得分機器】(永久 OVR +1)，將特質加成補回
   if (upgradedCard.legacy.traits.includes('得分機器')) {
@@ -18117,7 +18520,15 @@ function createCard(basePlayer, star = 1) {
   renderAll();
   openUpgradeModal();
 
-  alert(`⭐ 升星成功！\n\n${targetName}\n★${targetStar} × 2  ➔  ★${upgradedCard.stars} × 1 (OVR ${upgradedCard.ovr})\n🏆 生涯紀錄已完整繼承（生涯總得分：${upgradedCard.legacy.pts} 分 ｜ 戒指：💍×${upgradedCard.legacy.rings}）！`);
+  showRewardModal({
+    title: '⭐ 升星成功！',
+    subtitle: `${targetName} 成功晉升為 ★${upgradedCard.stars} 星！戰力更上層樓！`,
+    rewards: [
+      { icon: '⭐', name: `★${upgradedCard.stars} 級星評`, amount: `★${upgradedCard.stars}` },
+      { icon: '🏀', name: '綜合戰力', amount: `OVR ${upgradedCard.ovr}` }
+    ],
+    note: `🏆 完整繼承生涯紀錄：得分 ${upgradedCard.legacy.pts || 0} 分 ｜ 冠軍戒指 💍×${upgradedCard.legacy.rings || 0}${mergedLegacy.fmvps > 0 ? ` ｜ FMVP 🏆×${mergedLegacy.fmvps} (OVR+${fmvpBonus})` : ''}`
+  });
 }
 
     function openUpgradeModal() {
@@ -18310,7 +18721,7 @@ function isPlayerInRoster(cardId) {
       removePlayerFromEntireRoster(card.cardId);
       const emptyIdx = state.benchLineup.findIndex(slot => slot === null);
       if (emptyIdx === -1) { 
-        alert("替補席已滿！"); 
+        showToast("⚠️ 替補席 6 人已滿！", "warning"); 
         return; 
       }
       state.benchLineup[emptyIdx] = card;
@@ -18323,7 +18734,10 @@ function isPlayerInRoster(cardId) {
     }
 
     function autoSetHighestOvrLineup() {
-      if (!state.inventory || state.inventory.length === 0) { alert("背包無球員！"); return; }
+      if (!state.inventory || state.inventory.length === 0) { 
+        showToast("⚠️ 背包內尚無球員卡！", "warning"); 
+        return; 
+      }
       state.startingLineup = { PG: null, SG: null, SF: null, PF: null, C: null };
       state.benchLineup = [null, null, null, null, null, null];
       const available = getSortedInventory().sort((a, b) => (b.ovr || b.baseOvr) - (a.ovr || a.baseOvr));
@@ -18344,6 +18758,7 @@ function isPlayerInRoster(cardId) {
         if (b) { state.benchLineup[i] = b; usedCardIds.add(b.cardId); }
       }
       renderAll();
+      showToast("⚡ 一鍵最佳陣容配置完成！", "success");
     }
 
     function handleCardDragStart(e, cardId) {
@@ -18453,10 +18868,10 @@ function closeMarketModal() {
       saveGame();
       renderAll();
       openMarketModal();
-      alert(`✅ 成功轉化 ${card.name}，獲得 ${val} 點選秀碎片！`);
+      showToast(`✅ 成功轉化 ${card.name}，獲得 ${val} 點選秀碎片！`, 'success');
     }
 
-    function batchConvertCards() {
+    async function batchConvertCards() {
       const shardMap = { 'N': 1, 'R': 3, 'SR': 10, 'SSR': 30 };
       const tier = document.getElementById('convertTierSelect')?.value || 'N';
 
@@ -18486,13 +18901,19 @@ function closeMarketModal() {
       });
 
       if (targetIndexes.length === 0) {
-        alert(`⚠️ 目前背包內沒有可轉化的【${tier}】閒置卡片！`);
+        showToast(` 目前背包內沒有可轉化的【${tier}】閒置卡片！`, 'warning');
         return;
       }
 
-      if (!confirm(`♻️ 確認轉化 ${targetIndexes.length} 張【${tier}】球員卡？\n獲得 🧩 ${totalShards} 點選秀碎片（先發與替補球員已受保護）`)) {
-        return;
-      }
+      const confirmed = await showGameConfirm({
+        title: '♻️ 確認批次轉化卡片',
+        message: `確定轉化 ${targetIndexes.length} 張【${tier}】球員卡？\n預計獲得 🧩 ${totalShards} 點選秀碎片\n（先發與替補席球員均受保護不會被轉化）`,
+        confirmText: '確定轉化',
+        cancelText: '取消',
+        type: 'warning'
+      });
+
+      if (!confirmed) return;
 
       targetIndexes.sort((a, b) => b - a).forEach(idx => {
         state.inventory.splice(idx, 1);
@@ -18505,7 +18926,7 @@ function closeMarketModal() {
       renderAll();
       openMarketModal();
 
-      alert(`✅ 轉化成功！獲得了 🧩 ${totalShards} 點選秀碎片！`);
+      showToast(` 轉化成功！獲得了 🧩 ${totalShards} 點選秀碎片！`, 'success');
     }
 
     function openMarketModal() {
@@ -18701,8 +19122,8 @@ function renderFlashMarket() {
       if (!deal || deal.bought) return;
 
       if (state.scoutPoints < deal.price) {
-playSound('buzz'); // 👈 新增：碎片不足答錯/警告音
-        alert(`❌ 選秀碎片不足！需要 ${deal.price} 💎，目前持有 ${state.scoutPoints} 💎！`);
+        playSound('buzz');
+        showToast(`❌ 選秀碎片不足！需要 ${deal.price} 💎（目前持有 ${state.scoutPoints} 💎）`, 'warning');
         return;
       }
 
@@ -18713,40 +19134,85 @@ playSound('buzz'); // 👈 新增：碎片不足答錯/警告音
       const newCard = createCard(deal, 1);
       addCard(newCard);
 
-      confetti({ particleCount: 90, spread: 60 });
-      playSound('ur_ssr');
-      alert(`🎉 成功從黑市買下【${deal.name}】(${deal.rarity}・OVR ${deal.ovr})！`);
-
       saveGame();
       renderAll();
       openMarketModal();
+
+      showRewardModal({
+        title: '🎉 黑市簽約成功！',
+        subtitle: `成功簽下球員【${deal.name}】！`,
+        rewards: [
+          { icon: '🏀', name: deal.name, amount: `${deal.rarity} ${deal.ovr}` }
+        ]
+      });
     }
+
     function buyKobeLegend() {
-      if (state.scoutPoints < 2400) { alert("選秀碎片不足 2400 點！"); return; }
+      if (state.scoutPoints < 2400) { 
+        showToast("❌ 選秀碎片不足 2400 點！", "warning"); 
+        return; 
+      }
       state.scoutPoints -= 2400;
       const kobeCard = createCard({
         name: "Kobe Bryant ('10)", team: "LAL", positions: ["SG", "SF"],
-        baseOvr: 99, ovr: 99, rarity: "UR", nbaId: 977, isLegend: true
+        baseOvr: 99, ovr: 99, realOvr: 97, real_ovr: 97, rarity: "UR", nbaId: 977, isLegend: true,
+        basic: {
+          MP: 38.8,
+          FGA: 21.5,
+          "FG%": "45.6%",
+          "3PA": 4.1,
+          "3P%": "32.9%",
+          FTA: 7.4,
+          "FT%": "81.1%",
+          ORB: 1.1,
+          DRB: 4.3,
+          AST: 5.0,
+          STL: 1.5,
+          BLK: 0.3,
+          TOV: 3.2,
+          PF: 2.6,
+          PTS: 27.0
+        },
+        advanced: {
+          "USG%": "32.3%",
+          "TS%": "54.5%",
+          "AST%": "23.8%",
+          "TRB%": "7.7%",
+          "STL%": "2.1%",
+          "BLK%": "0.5%",
+          "PER": "21.9",
+          "WS": "9.4",
+          "BPM": "+4.1",
+          "VORP": "4.4"
+        }
       }, 1);
       addCard(kobeCard);
-      confetti({ particleCount: 200 });
-      playSound('ur_ssr');
-      alert("🏆 成功兌換傳奇 Kobe Bryant ('10)！");
       saveGame();
       renderAll();
       openMarketModal();
+
+      showRewardModal({
+        title: '🏆 傳奇降臨！',
+        subtitle: "成功兌換 NBA 傳奇球星 Kobe Bryant ('10)！",
+        rewards: [
+          { icon: '⭐', name: "Kobe Bryant ('10)", amount: 'UR 99' },
+          { icon: '👑', name: '曼巴精神', amount: 'LEGEND' }
+        ]
+      });
     }
 
     function buyTicketWithGems() {
       if (state.scoutPoints < 50) {
-playSound('buzz'); // 👈 碎片不足警告音
- alert("碎片不足 50 點！"); return; }
+        playSound('buzz');
+        showToast("⚠️ 選秀碎片不足 50 點！", "warning");
+        return;
+      }
       state.scoutPoints -= 50;
       state.tickets += 1;
-playSound('coin'); // 👈 兌換成功金幣音
-      alert("🎉 成功兌換 1 張抽卡券！");
+      playSound('coin');
       saveGame();
       renderAll();
+      showToast("🎉 成功以 50 碎片兌換 1 張抽卡券！", "success");
     }
 
     /* =====================================================
@@ -18762,7 +19228,10 @@ playSound('coin'); // 👈 兌換成功金幣音
     }
 
     function launchGachaWithShopAnimation(times) {
-      if (!state.isAdmin && state.tickets < times) { alert("抽卡券不足！"); return; }
+      if (!state.isAdmin && state.tickets < times) { 
+        showToast("🎟️ 抽卡券不足！完成每日多益背單字或例行賽可獲取更多！", "warning"); 
+        return; 
+      }
       pendingGachaTimes = times;
       document.getElementById('cardShopOverlay').classList.remove('hidden');
     }
@@ -19077,6 +19546,436 @@ function analyzeLineupBadges() {
 }
 
 /* =====================================================
+   📊 擬真 NBA Box Score 全局通用渲染器 (例行賽 & 季後賽格式完全統一)
+===================================================== */
+function openGameBoxScoreModal(gameData, subTitle = '收官戰') {
+  if (!gameData) return;
+  const bestPlayer = gameData.bestPlayer || [...(gameData.boxScore || [])].sort((a, b) => (b.pts + (b.reb || 0) * 1.2 + (b.ast || 0) * 1.5) - (a.pts + (a.reb || 0) * 1.2 + (a.ast || 0) * 1.5))[0] || { name: '主力核心', pos: 'SG', pts: 25, reb: 5, ast: 5, trait: { badge: '🔥核心' }, plusMinus: 10 };
+
+  const myScoreEl = document.getElementById('modalMyScore');
+  const oppScoreEl = document.getElementById('modalOppScore');
+  const oppTeamEl = document.getElementById('modalOppTeamName');
+  const highlightEl = document.getElementById('modalHighlight');
+  const tbody = document.getElementById('modalBoxScoreTbody');
+
+  if (myScoreEl) myScoreEl.innerText = gameData.myScore;
+  if (oppScoreEl) oppScoreEl.innerText = gameData.oppScore;
+  if (oppTeamEl) oppTeamEl.innerText = `${gameData.oppTeam} (${subTitle})`;
+  if (highlightEl) {
+    highlightEl.innerText = gameData.highlight || `🔥 本場焦點：【${bestPlayer.name}】(${bestPlayer.trait?.badge || '⭐'}) 豪取 ${bestPlayer.pts}分 ${bestPlayer.reb || 0}籃板 ${bestPlayer.ast || 0}助攻 (正負值 ${bestPlayer.plusMinus >= 0 ? '+' + bestPlayer.plusMinus : bestPlayer.plusMinus})！`;
+  }
+
+  if (tbody) {
+    const starters = (gameData.boxScore || []).filter(p => p.role === 'starter');
+    const bench = (gameData.boxScore || []).filter(p => p.role === 'bench');
+
+    const starterRows = starters.map(p => `
+      <tr class="hover:bg-slate-800/40">
+        <td class="py-2.5 px-3 font-sans font-bold flex items-center gap-1.5 sticky left-0 bg-slate-950/95 z-10 border-r border-slate-800/60">
+          <span class="text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">${p.pos}</span>
+          <span class="truncate max-w-[110px] text-white">${p.name}</span>
+        </td>
+        <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.min}</td>
+        <td class="py-2 px-2 text-center font-bold font-mono ${p.pts >= 20 ? 'text-amber-400 font-black text-sm' : 'text-slate-100'}">${p.pts}</td>
+        <td class="py-2 px-2 text-center text-slate-300 font-mono">${p.fgM}-${p.fgA}</td>
+        <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.fgPct}%</td>
+        <td class="py-2 px-2 text-center text-amber-300 font-mono">${p.threeM}-${p.threeA}</td>
+        <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.threePct}%</td>
+        <td class="py-2 px-2 text-center text-slate-300 font-mono">${p.ftM}-${p.ftA}</td>
+        <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.ftPct}%</td>
+        <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.oReb}</td>
+        <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.dReb}</td>
+        <td class="py-2 px-2 text-center font-bold text-slate-200 font-mono">${p.reb}</td>
+        <td class="py-2 px-2 text-center font-bold text-indigo-300 font-mono">${p.ast}</td>
+        <td class="py-2 px-2 text-center text-slate-300 font-mono">${p.stl}</td>
+        <td class="py-2 px-2 text-center text-slate-300 font-mono">${p.blk}</td>
+        <td class="py-2 px-2 text-center text-rose-400 font-mono">${p.tov}</td>
+        <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.pf}</td>
+        <td class="py-2 px-2.5 text-center font-mono font-bold ${p.plusMinus >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${p.plusMinus >= 0 ? '+' + p.plusMinus : p.plusMinus}</td>
+      </tr>
+    `).join('');
+
+    const benchRows = bench.map(p => `
+      <tr class="hover:bg-indigo-950/30 bg-slate-950/40">
+        <td class="py-2 px-3 font-sans font-medium flex items-center gap-1.5 sticky left-0 bg-slate-950/95 z-10 border-r border-slate-800/60">
+          <span class="text-[8px] font-mono px-1 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700">${p.benchSlot || 'BENCH'}</span>
+          <span class="truncate max-w-[110px] text-slate-300">${p.name}</span>
+          ${p.isSixthMan ? '<span class="text-[8px] font-black text-orange-400 bg-orange-950 px-1 rounded border border-orange-500/40">6TH</span>' : ''}
+        </td>
+        <td class="py-2 px-2 text-center text-slate-500 font-mono">${p.min}</td>
+        <td class="py-2 px-2 text-center font-bold font-mono ${p.pts >= 12 ? 'text-orange-400 font-bold' : 'text-slate-300'}">${p.pts}</td>
+        <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.fgM}-${p.fgA}</td>
+        <td class="py-2 px-2 text-center text-slate-500 font-mono">${p.fgPct}%</td>
+        <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.threeM}-${p.threeA}</td>
+        <td class="py-2 px-2 text-center text-slate-500 font-mono">${p.threePct}%</td>
+        <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.ftM}-${p.ftA}</td>
+        <td class="py-2 px-2 text-center text-slate-500 font-mono">${p.ftPct}%</td>
+        <td class="py-2 px-2 text-center text-slate-500 font-mono">${p.oReb}</td>
+        <td class="py-2 px-2 text-center text-slate-500 font-mono">${p.dReb}</td>
+        <td class="py-2 px-2 text-center text-slate-300 font-mono">${p.reb}</td>
+        <td class="py-2 px-2 text-center text-indigo-300 font-mono">${p.ast}</td>
+        <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.stl}</td>
+        <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.blk}</td>
+        <td class="py-2 px-2 text-center text-rose-400/80 font-mono">${p.tov}</td>
+        <td class="py-2 px-2 text-center text-slate-500 font-mono">${p.pf}</td>
+        <td class="py-2 px-2.5 text-center font-mono font-bold ${p.plusMinus >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${p.plusMinus >= 0 ? '+' + p.plusMinus : p.plusMinus}</td>
+      </tr>
+    `).join('');
+
+    tbody.innerHTML = `
+      <tr class="bg-slate-900/90 text-amber-400 text-[10px] font-mono font-bold border-y border-amber-500/30">
+        <td colspan="18" class="py-1 px-3">⭐️ 先發五人陣容 (Starters)</td>
+      </tr>
+      ${starterRows}
+      <tr class="bg-slate-900/90 text-indigo-300 text-[10px] font-mono font-bold border-y border-indigo-500/30">
+        <td colspan="18" class="py-1 px-3">🛡️ 板凳輪替陣容 (Bench) ｜ 合計攻下 ${gameData.benchPts || 0} 分</td>
+      </tr>
+      ${benchRows}
+    `;
+  }
+
+  // 🏅 渲染徽章高光事件
+  const badgeContainer = document.getElementById('modalBadgeMomentsContainer');
+  const badgeListEl = document.getElementById('modalBadgeMomentsList');
+
+  if (badgeContainer && badgeListEl) {
+    if (gameData.badgeMoments && gameData.badgeMoments.length > 0) {
+      badgeContainer.classList.remove('hidden');
+      badgeListEl.innerHTML = gameData.badgeMoments.map(m => `
+        <div class="p-2.5 rounded-xl border text-xs flex items-start gap-2 ${m.color}">
+          <span class="text-base flex-shrink-0">${m.icon}</span>
+          <div>
+            <span class="font-bold block">${m.badge} ｜ ${m.player}</span>
+            <p class="text-[11px] text-slate-200 mt-0.5 leading-snug">${m.desc}</p>
+          </div>
+        </div>
+      `).join('');
+    } else {
+      badgeContainer.classList.add('hidden');
+    }
+  }
+
+  const modalBox = document.getElementById('gameBoxScoreModal');
+  if (modalBox) {
+    modalBox.classList.remove('hidden');
+    modalBox.style.display = 'flex';
+    modalBox.style.zIndex = '9999';
+  }
+}
+window.openGameBoxScoreModal = openGameBoxScoreModal;
+
+/* =====================================================
+   🏀 完整 11 人 Box Score 戰報數據生成器 (18 欄位真實擬真)
+===================================================== */
+function generateGameBoxScoreData({ starters, bench, myScore, oppScore, win, oppTeam, badgeEffects, isPlayoff = false, gameNum = 1 }) {
+  if (!badgeEffects) badgeEffects = analyzeLineupBadges();
+
+  // 確保 5 位先發
+  const safeStarters = [...(starters || [])];
+  while (safeStarters.length < 5) {
+    safeStarters.push({ name: `主力球員 ${safeStarters.length + 1}`, positions: ['G'], ovr: 78, baseOvr: 78 });
+  }
+
+  // 確保 6 位替補
+  const safeBench = [...(bench || [])];
+  if (state.inventory && safeBench.length < 6) {
+    const starterIds = new Set(safeStarters.map(p => p.cardId).filter(Boolean));
+    const benchIds = new Set(safeBench.map(p => p.cardId).filter(Boolean));
+    const extraCards = state.inventory.filter(c => !starterIds.has(c.cardId) && !benchIds.has(c.cardId));
+    for (const ec of extraCards) {
+      if (safeBench.length >= 6) break;
+      safeBench.push(ec);
+    }
+  }
+  while (safeBench.length < 6) {
+    safeBench.push({ name: `輪替替補 ${safeBench.length + 1}`, positions: ['C'], ovr: 74, baseOvr: 74 });
+  }
+
+  const starterOvrs = safeStarters.map(p => Number(p.ovr || p.baseOvr || 75));
+  const avgStarterOvr = starterOvrs.reduce((a, b) => a + b, 0) / 5;
+
+  const starterTrackers = safeStarters.map(p => {
+    const trait = getPlayerArchetype(p);
+    const ovr = Number(p.ovr || p.baseOvr || 75);
+    const ovrDiffFromAvg = ovr - avgStarterOvr;
+    let alphaMultiplier = 1.0;
+    if (ovrDiffFromAvg > 0) alphaMultiplier += Math.pow(ovrDiffFromAvg, 1.2) * 0.04;
+    else alphaMultiplier -= Math.abs(ovrDiffFromAvg) * 0.025;
+    alphaMultiplier = Math.max(0.65, Math.min(1.40, alphaMultiplier));
+    return {
+      player: p, role: 'starter', trait, ovr, alphaMultiplier,
+      seasonFormBonus: (Math.random() * 3) - 1.5
+    };
+  });
+
+  const benchTrackers = safeBench.slice(0, 6).map((p, idx) => {
+    const trait = getPlayerArchetype(p);
+    const ovr = Number(p.ovr || p.baseOvr || 75);
+    const isSixthMan = badgeEffects.sixthMans ? badgeEffects.sixthMans.some(sm => sm.cardId === p.cardId) : (idx === 0);
+    return {
+      player: p, role: 'bench', benchSlot: idx + 1, isSixthMan,
+      trait, ovr, alphaMultiplier: isSixthMan ? 1.25 : 0.75,
+      seasonFormBonus: (Math.random() * 2) - 1
+    };
+  });
+
+  // 模擬特定徽章事件
+  const forcedBadgeStats = {};
+  const gameBadgeMoments = [];
+
+  if (badgeEffects.rimProtectors && badgeEffects.rimProtectors.length > 0 && Math.random() < 0.45) {
+    const blocker = badgeEffects.rimProtectors[Math.floor(Math.random() * badgeEffects.rimProtectors.length)];
+    const blocks = Math.floor(Math.random() * 3 + 4);
+    forcedBadgeStats[blocker.name] = { minBlk: blocks };
+    gameBadgeMoments.push({
+      badge: "木桶伯", icon: "☝️", player: blocker.name,
+      color: "text-rose-400 bg-rose-950/70 border-rose-500/50",
+      desc: `【木桶伯】禁飛區遮天蔽日！${blocker.name} 單場狂賞 ${blocks} 記大火鍋，稱霸油漆區！`
+    });
+  }
+
+  if (badgeEffects.pickpockets && badgeEffects.pickpockets.length > 0 && Math.random() < 0.40) {
+    const stealer = badgeEffects.pickpockets[Math.floor(Math.random() * badgeEffects.pickpockets.length)];
+    const steals = Math.floor(Math.random() * 2 + 4);
+    forcedBadgeStats[stealer.name] = { minStl: steals };
+    gameBadgeMoments.push({
+      badge: "小偷", icon: "🧤", player: stealer.name,
+      color: "text-cyan-400 bg-cyan-950/70 border-cyan-500/50",
+      desc: `【小偷】神經刀快手抄截！${stealer.name} 全場送出 ${steals} 次致命抄截，打出反擊狂潮！`
+    });
+  }
+
+  if (badgeEffects.sharpshooters && badgeEffects.sharpshooters.length > 0 && Math.random() < 0.35) {
+    const shooter = badgeEffects.sharpshooters[Math.floor(Math.random() * badgeEffects.sharpshooters.length)];
+    const threes = Math.floor(Math.random() * 3 + 5);
+    forcedBadgeStats[shooter.name] = { forceThreeM: threes };
+    gameBadgeMoments.push({
+      badge: "神射手", icon: "🏹", player: shooter.name,
+      color: "text-amber-400 bg-amber-950/70 border-amber-500/50",
+      desc: `【神射手】手感滾燙射穿防線！${shooter.name} 單場狂飆 ${threes} 記三分雨！`
+    });
+  }
+
+  if (badgeEffects.hasMamba && badgeEffects.mambaPlayers && badgeEffects.mambaPlayers.length > 0) {
+    const mambaHero = badgeEffects.mambaPlayers[Math.floor(Math.random() * badgeEffects.mambaPlayers.length)];
+    if (win || Math.random() < 0.5) {
+      forcedBadgeStats[mambaHero.name] = { minPts: 30 };
+      gameBadgeMoments.push({
+        badge: "曼巴精神", icon: "🐍", player: mambaHero.name,
+        color: "text-purple-400 bg-purple-950/70 border-purple-500/50",
+        desc: `【曼巴精神】強行接管決勝時刻！${mambaHero.name} 連續單打命中致勝殺招！`
+      });
+    }
+  }
+
+  const gameMargin = myScore - oppScore;
+  const benchBoost = (badgeEffects.sixthMans && badgeEffects.sixthMans.length > 0) ? 1 : 0;
+  // 季後賽主力縮減輪替，板凳得分約佔 20%~25%
+  const benchShare = isPlayoff ? 0.20 : 0.24;
+  const benchPtsTotal = Math.min(45, Math.max(16, Math.round(myScore * (benchShare + (benchBoost > 0 ? 0.05 : 0)) + (Math.random() * 4 - 2))));
+  const startersPtsTotal = myScore - benchPtsTotal;
+
+  // A. 先發 5 人
+  const starterWeights = starterTrackers.map(t => {
+    let w = t.ovr * 0.1 * t.alphaMultiplier;
+    if (t.trait.type === 'shooter') w *= 1.35;
+    else if (t.trait.type === 'slasher') w *= 1.25;
+    else if (t.trait.type === 'playmaker') w *= 1.20;
+    else if (t.trait.type === 'big_rebound') w *= 0.90;
+    else w *= 0.75;
+    return w * (0.85 + Math.random() * 0.3);
+  });
+  const totalStarterW = starterWeights.reduce((a, b) => a + b, 0) || 1;
+  let starterAllocatedPts = 0;
+
+  const startersBox = starterTrackers.map((tracker, idx) => {
+    const p = tracker.player;
+    const arch = tracker.trait.type;
+    const effOvr = tracker.ovr + tracker.seasonFormBonus;
+    const forced = forcedBadgeStats[p.name] || {};
+
+    const real3PA = parseFloat(p.basic ? p.basic['3PA'] : 0) || 0;
+    const hasSniperBadge = (getPlayerBadges(p) || []).some(b => b.name === '神射手');
+    const isVolumeShooter = arch === 'shooter' || hasSniperBadge || real3PA >= 3.0;
+
+    let pts;
+    if (forced.forceThreeM) {
+      pts = Math.max(forced.forceThreeM * 3 + 4, Math.round((starterWeights[idx] / totalStarterW) * startersPtsTotal));
+    } else if (forced.minPts) {
+      pts = Math.max(forced.minPts, Math.round((starterWeights[idx] / totalStarterW) * startersPtsTotal));
+    } else if (idx === starterTrackers.length - 1) {
+      pts = Math.max(2, startersPtsTotal - starterAllocatedPts);
+    } else {
+      pts = Math.max(3, Math.round((starterWeights[idx] / totalStarterW) * startersPtsTotal));
+    }
+    starterAllocatedPts += pts;
+    const min = isPlayoff 
+      ? Math.round(35 + (tracker.ovr - 80) * 0.25 + (Math.random() * 4 - 2))
+      : Math.round(30 + (tracker.ovr - 80) * 0.35 + (Math.random() * 4 - 2));
+
+    let threeM = 0, threeA = 0;
+    if (forced.forceThreeM) {
+      threeM = forced.forceThreeM;
+      threeA = threeM + Math.floor(Math.random() * 4 + 3);
+    } else if (isVolumeShooter) {
+      threeM = Math.min(Math.floor(pts / 3), Math.round(2 + Math.random() * 3));
+      threeA = Math.max(threeM, Math.round(threeM * (2.0 + Math.random() * 0.6)));
+    } else if (arch === 'playmaker' || arch === '3d') {
+      threeM = Math.min(Math.floor(pts / 3), Math.round(1 + Math.random() * 2));
+      threeA = Math.max(threeM, Math.round(threeM * (2.2 + Math.random() * 0.5)));
+    } else if (real3PA >= 1.0) {
+      threeM = Math.min(Math.floor(pts / 3), Math.random() > 0.4 ? 1 : 0);
+      threeA = Math.max(threeM, threeM + Math.round(Math.random() * 2));
+    }
+
+    let remainingPts = Math.max(0, pts - (threeM * 3));
+    let ftM = 0, ftA = 0;
+    if (remainingPts > 0 && Math.random() < 0.75) {
+      ftM = Math.min(remainingPts, Math.round(1 + Math.random() * (tracker.ovr >= 88 ? 4 : 2)));
+      ftA = Math.max(ftM, ftM + (Math.random() > 0.6 ? 1 : 0));
+      remainingPts -= ftM;
+    }
+
+    const twoM = Math.max(0, Math.floor(remainingPts / 2));
+    const fgM = twoM + threeM;
+    const fgA = Math.max(fgM, Math.round(fgM / (0.44 + (effOvr - 75) * 0.005 + (Math.random() * 0.1 - 0.05))));
+
+    const fgPct = fgA > 0 ? ((fgM / fgA) * 100).toFixed(1) : "0.0";
+    const threePct = threeA > 0 ? ((threeM / threeA) * 100).toFixed(1) : "0.0";
+    const ftPct = ftA > 0 ? ((ftM / ftA) * 100).toFixed(1) : "0.0";
+
+    let oReb = 0, dReb = 0;
+    if (arch === 'big_rebound') {
+      oReb = Math.round(2 + Math.random() * 3);
+      dReb = Math.round(6 + Math.random() * 6);
+    } else if (arch === 'slasher') {
+      oReb = Math.random() > 0.5 ? 1 : 0;
+      dReb = Math.round(3 + Math.random() * 4);
+    } else {
+      oReb = Math.random() > 0.75 ? 1 : 0;
+      dReb = Math.round(2 + Math.random() * 3);
+    }
+    const reb = oReb + dReb;
+
+    let ast = 0;
+    if (arch === 'playmaker') ast = Math.round(6 + Math.random() * 6);
+    else if (tracker.alphaMultiplier >= 1.2) ast = Math.round(3 + Math.random() * 3);
+    else ast = Math.round(1 + Math.random() * 2);
+
+    let stl = forced.minStl ? forced.minStl : ((arch === '3d' || tracker.ovr >= 92) ? (Math.random() > 0.4 ? 2 : 1) : (Math.random() > 0.65 ? 1 : 0));
+    let blk = forced.minBlk ? forced.minBlk : ((arch === 'big_rebound' || p.name.includes("Wembanyama") || p.name.includes("Davis")) ? Math.round(1 + Math.random() * 3) : (Math.random() > 0.8 ? 1 : 0));
+    let tov = Math.round(1 + Math.random() * (arch === 'playmaker' ? 3 : 2));
+    let pf = Math.round(1 + Math.random() * 3);
+    const plusMinus = win ? Math.round(gameMargin * 0.8 + (Math.random() * 6 - 3)) : Math.round(gameMargin * 0.8 + (Math.random() * 6 - 3));
+
+    return {
+      name: p.name, role: 'starter', pos: p.positions[0] || 'G', trait: tracker.trait,
+      min, pts, fgM, fgA, fgPct, threeM, threeA, threePct, ftM, ftA, ftPct,
+      oReb, dReb, reb, ast, stl, blk, tov, pf, plusMinus
+    };
+  });
+
+  // B. 替補 6 人
+  let benchAllocatedPts = 0;
+  const benchWeights = benchTrackers.map(t => {
+    let w = t.ovr * 0.1 * t.alphaMultiplier;
+    if (t.isSixthMan) w *= 1.6;
+    if (t.trait.type === 'shooter' || t.trait.type === 'slasher') w *= 1.3;
+    return w * (0.8 + Math.random() * 0.4);
+  });
+  const totalBenchW = benchWeights.reduce((a, b) => a + b, 0) || 1;
+
+  const benchBox = benchTrackers.map((tracker, idx) => {
+    const p = tracker.player;
+    const arch = tracker.trait.type;
+    const effOvr = tracker.ovr + tracker.seasonFormBonus;
+    const forced = forcedBadgeStats[p.name] || {};
+
+    const real3PA = parseFloat(p.basic ? p.basic['3PA'] : 0) || 0;
+    const canShootThrees = real3PA >= 0.8 || arch === 'shooter' || ['PG', 'SG'].includes(p.positions[0]);
+
+    let pts;
+    if (forced.minPts) {
+      pts = forced.minPts;
+    } else if (forced.forceThreeM) {
+      pts = Math.max(forced.forceThreeM * 3 + 2, Math.round((benchWeights[idx] / totalBenchW) * benchPtsTotal));
+    } else if (idx === benchTrackers.length - 1) {
+      pts = Math.max(1, benchPtsTotal - benchAllocatedPts);
+    } else {
+      pts = Math.max(1, Math.round((benchWeights[idx] / totalBenchW) * benchPtsTotal));
+    }
+    benchAllocatedPts += pts;
+    const min = Math.round((isPlayoff ? 10 : 14) + (tracker.isSixthMan ? 8 : 0) + (Math.random() * 4 - 2));
+
+    let threeM = 0, threeA = 0;
+    if (canShootThrees) {
+      if (forced.forceThreeM) {
+        threeM = forced.forceThreeM;
+        threeA = threeM + Math.floor(Math.random() * 3 + 2);
+      } else if (arch === 'shooter' || tracker.isSixthMan) {
+        threeM = Math.min(Math.floor(pts / 3), Math.round(1 + Math.random() * 2));
+        threeA = Math.max(threeM, threeM + (threeM > 0 ? Math.round(Math.random() * 2) : 1));
+      }
+    }
+
+    let remainingPts = Math.max(0, pts - (threeM * 3));
+    let ftM = 0, ftA = 0;
+    if (remainingPts > 0 && Math.random() < 0.65) {
+      ftM = Math.min(remainingPts, Math.round(1 + Math.random() * 3));
+      ftA = Math.max(ftM, ftM + (Math.random() > 0.5 ? 1 : 0));
+      remainingPts -= ftM;
+    }
+
+    const twoM = Math.max(0, Math.floor(remainingPts / 2));
+    const fgM = twoM + threeM;
+    const fgA = Math.max(fgM, Math.round(fgM / (canShootThrees ? 0.44 : 0.62)));
+
+    const fgPct = fgA > 0 ? ((fgM / fgA) * 100).toFixed(1) : "0.0";
+    const threePct = threeA > 0 ? ((threeM / threeA) * 100).toFixed(1) : "0.0";
+    const ftPct = ftA > 0 ? ((ftM / ftA) * 100).toFixed(1) : "0.0";
+
+    let oReb = 0, dReb = 0;
+    if (arch === 'big_rebound' || p.name.includes("Gobert") || p.name.includes("Edey")) {
+      oReb = Math.round(2 + Math.random() * 3);
+      dReb = Math.round(5 + Math.random() * 5);
+    } else {
+      oReb = Math.random() > 0.7 ? 1 : 0;
+      dReb = Math.round(1 + Math.random() * 2);
+    }
+    const reb = oReb + dReb;
+
+    let ast = (arch === 'playmaker') ? Math.round(3 + Math.random() * 4) : Math.round(Math.random() * 2);
+    let stl = forced.minStl ? forced.minStl : (Math.random() > 0.7 ? 1 : 0);
+    let blk = forced.minBlk ? forced.minBlk : ((arch === 'big_rebound' || p.name.includes("Gobert")) ? Math.round(1 + Math.random() * 3) : 0);
+    let tov = Math.round(Math.random() * 2);
+    let pf = Math.round(1 + Math.random() * 2);
+    const plusMinus = win ? Math.round(gameMargin * 0.4 + (Math.random() * 4 - 2)) : Math.round(gameMargin * 0.4 + (Math.random() * 4 - 2));
+
+    return {
+      name: p.name, role: 'bench', benchSlot: `B${tracker.benchSlot}`, pos: p.positions[0] || 'C',
+      trait: tracker.trait, isSixthMan: tracker.isSixthMan, min, pts, fgM, fgA, fgPct,
+      threeM, threeA, threePct, ftM, ftA, ftPct, oReb, dReb, reb, ast, stl, blk, tov, pf, plusMinus
+    };
+  });
+
+  const fullBox = [...startersBox, ...benchBox];
+  const bestPlayer = [...fullBox].sort((a, b) => (b.pts + b.reb * 1.2 + b.ast * 1.5) - (a.pts + a.reb * 1.2 + a.ast * 1.5))[0] || startersBox[0];
+
+  const highlightText = win
+    ? `🔥 G${gameNum} 勝利：【${bestPlayer.name}】(${bestPlayer.trait?.badge || '🔥'}) 豪取 ${bestPlayer.pts}分 ${bestPlayer.reb}籃板 ${bestPlayer.ast}助攻 (正負值 ${bestPlayer.plusMinus >= 0 ? '+' + bestPlayer.plusMinus : bestPlayer.plusMinus})，率隊斬獲關鍵勝利！`
+    : `💔 G${gameNum} 惜敗：末節陷入苦戰，【${bestPlayer.name}】砍下 ${bestPlayer.pts}分 ${bestPlayer.reb}板遺憾落敗。`;
+
+  return {
+    win, oppTeam, myScore, oppScore,
+    boxScore: fullBox, benchPts: benchPtsTotal,
+    badgeMoments: gameBadgeMoments,
+    highlight: highlightText,
+    bestPlayer
+  };
+}
+window.generateGameBoxScoreData = generateGameBoxScoreData;
+
+/* =====================================================
    🏀 82 場例行賽即時模擬主引擎 (完全防卡死 + 11 人全數據版)
 ===================================================== */
 function start82GamesSimulation() {
@@ -19084,14 +19983,22 @@ function start82GamesSimulation() {
   const today = getTodayString();
   if (!state.isAdmin && state.season.lastSimDate === today) {
     playSound('buzz');
-    alert("今天已經進行過例行賽模擬囉！明日 00:00 自動重置！");
+    showGameAlert({
+      title: '例行賽每日額度',
+      message: '今天已經進行過例行賽模擬囉！明日 00:00 自動重置！',
+      type: 'info'
+    });
     return;
   }
   playSound('whistle');
 
   const starters = ['PG', 'SG', 'SF', 'PF', 'C'].map(pos => state.startingLineup[pos]).filter(Boolean);
   if (starters.length < 5) {
-    alert("⚠️ 先發五人陣容尚未補齊！請先至「陣容」頁面安排完整 5 位先發球員！");
+    showGameAlert({
+      title: '先發陣容未補齊',
+      message: '⚠️ 先發五人陣容尚未補齊！請先至「陣容」頁面安排完整 5 位先發球員！',
+      type: 'warning'
+    });
     return;
   }
 
@@ -19566,105 +20473,7 @@ function start82GamesSimulation() {
       ];
       // 收官戰 Box Score 彈窗
       const lastGame = games[81];
-      const bestPlayer = [...lastGame.boxScore].sort((a, b) => (b.pts + b.reb * 1.2 + b.ast * 1.5) - (a.pts + a.reb * 1.2 + a.ast * 1.5))[0];
-
-      document.getElementById('modalMyScore').innerText = lastGame.myScore;
-      document.getElementById('modalOppScore').innerText = lastGame.oppScore;
-      document.getElementById('modalOppTeamName').innerText = `${lastGame.oppTeam} (收官戰)`;
-      document.getElementById('modalHighlight').innerText = `🔥 收官戰焦點：【${bestPlayer.name}】(${bestPlayer.trait.badge}) 豪取 ${bestPlayer.pts}分 ${bestPlayer.reb}籃板 ${bestPlayer.ast}助攻 (正負值 ${bestPlayer.plusMinus >= 0 ? '+' + bestPlayer.plusMinus : bestPlayer.plusMinus})！`;
-
-      const tbody = document.getElementById('modalBoxScoreTbody');
-
-      const starterRows = lastGame.boxScore.filter(p => p.role === 'starter').map(p => `
-        <tr class="hover:bg-slate-800/40">
-          <td class="py-2.5 px-3 font-sans font-bold flex items-center gap-1.5 sticky left-0 bg-slate-950/95 z-10 border-r border-slate-800/60">
-            <span class="text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">${p.pos}</span>
-            <span class="truncate max-w-[110px] text-white">${p.name}</span>
-          </td>
-          <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.min}</td>
-          <td class="py-2 px-2 text-center font-bold font-mono ${p.pts >= 20 ? 'text-amber-400 font-black text-sm' : 'text-slate-100'}">${p.pts}</td>
-          <td class="py-2 px-2 text-center text-slate-300 font-mono">${p.fgM}-${p.fgA}</td>
-          <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.fgPct}%</td>
-          <td class="py-2 px-2 text-center text-amber-300 font-mono">${p.threeM}-${p.threeA}</td>
-          <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.threePct}%</td>
-          <td class="py-2 px-2 text-center text-slate-300 font-mono">${p.ftM}-${p.ftA}</td>
-          <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.ftPct}%</td>
-          <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.oReb}</td>
-          <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.dReb}</td>
-          <td class="py-2 px-2 text-center font-bold text-slate-200 font-mono">${p.reb}</td>
-          <td class="py-2 px-2 text-center font-bold text-indigo-300 font-mono">${p.ast}</td>
-          <td class="py-2 px-2 text-center text-slate-300 font-mono">${p.stl}</td>
-          <td class="py-2 px-2 text-center text-slate-300 font-mono">${p.blk}</td>
-          <td class="py-2 px-2 text-center text-rose-400 font-mono">${p.tov}</td>
-          <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.pf}</td>
-          <td class="py-2 px-2.5 text-center font-mono font-bold ${p.plusMinus >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${p.plusMinus >= 0 ? '+' + p.plusMinus : p.plusMinus}</td>
-        </tr>
-      `).join('');
-
-      const benchRows = lastGame.boxScore.filter(p => p.role === 'bench').map(p => `
-        <tr class="hover:bg-indigo-950/30 bg-slate-950/40">
-          <td class="py-2 px-3 font-sans font-medium flex items-center gap-1.5 sticky left-0 bg-slate-950/95 z-10 border-r border-slate-800/60">
-            <span class="text-[8px] font-mono px-1 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700">${p.benchSlot}</span>
-            <span class="truncate max-w-[110px] text-slate-300">${p.name}</span>
-            ${p.isSixthMan ? '<span class="text-[8px] font-black text-orange-400 bg-orange-950 px-1 rounded border border-orange-500/40">6TH</span>' : ''}
-          </td>
-          <td class="py-2 px-2 text-center text-slate-500 font-mono">${p.min}</td>
-          <td class="py-2 px-2 text-center font-bold font-mono ${p.pts >= 12 ? 'text-orange-400 font-bold' : 'text-slate-300'}">${p.pts}</td>
-          <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.fgM}-${p.fgA}</td>
-          <td class="py-2 px-2 text-center text-slate-500 font-mono">${p.fgPct}%</td>
-          <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.threeM}-${p.threeA}</td>
-          <td class="py-2 px-2 text-center text-slate-500 font-mono">${p.threePct}%</td>
-          <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.ftM}-${p.ftA}</td>
-          <td class="py-2 px-2 text-center text-slate-500 font-mono">${p.ftPct}%</td>
-          <td class="py-2 px-2 text-center text-slate-500 font-mono">${p.oReb}</td>
-          <td class="py-2 px-2 text-center text-slate-500 font-mono">${p.dReb}</td>
-          <td class="py-2 px-2 text-center text-slate-300 font-mono">${p.reb}</td>
-          <td class="py-2 px-2 text-center text-indigo-300 font-mono">${p.ast}</td>
-          <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.stl}</td>
-          <td class="py-2 px-2 text-center text-slate-400 font-mono">${p.blk}</td>
-          <td class="py-2 px-2 text-center text-rose-400/80 font-mono">${p.tov}</td>
-          <td class="py-2 px-2 text-center text-slate-500 font-mono">${p.pf}</td>
-          <td class="py-2 px-2.5 text-center font-mono font-bold ${p.plusMinus >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${p.plusMinus >= 0 ? '+' + p.plusMinus : p.plusMinus}</td>
-        </tr>
-      `).join('');
-
-      tbody.innerHTML = `
-        <tr class="bg-slate-900/90 text-amber-400 text-[10px] font-mono font-bold border-y border-amber-500/30">
-          <td colspan="18" class="py-1 px-3">⭐️ 先發五人陣容 (Starters)</td>
-        </tr>
-        ${starterRows}
-        <tr class="bg-slate-900/90 text-indigo-300 text-[10px] font-mono font-bold border-y border-indigo-500/30">
-          <td colspan="18" class="py-1 px-3">🛡️ 板凳輪替陣容 (Bench) ｜ 合計攻下 ${lastGame.benchPts} 分</td>
-        </tr>
-        ${benchRows}
-      `;
-
-      // 🏅 渲染徽章高光事件
-      const badgeContainer = document.getElementById('modalBadgeMomentsContainer');
-      const badgeListEl = document.getElementById('modalBadgeMomentsList');
-
-      if (badgeContainer && badgeListEl) {
-        if (lastGame.badgeMoments && lastGame.badgeMoments.length > 0) {
-          badgeContainer.classList.remove('hidden');
-          badgeListEl.innerHTML = lastGame.badgeMoments.map(m => `
-            <div class="p-2.5 rounded-xl border text-xs flex items-start gap-2 ${m.color}">
-              <span class="text-base flex-shrink-0">${m.icon}</span>
-              <div>
-                <span class="font-bold block">${m.badge} ｜ ${m.player}</span>
-                <p class="text-[11px] text-slate-200 mt-0.5 leading-snug">${m.desc}</p>
-              </div>
-            </div>
-          `).join('');
-        } else {
-          badgeContainer.classList.add('hidden');
-        }
-      }
-
-      const modalBox = document.getElementById('gameBoxScoreModal');
-      if (modalBox) {
-        modalBox.classList.remove('hidden');
-        modalBox.style.display = 'flex';
-      }
+      openGameBoxScoreModal(lastGame, '例行賽收官戰');
 
       // 🌟 生涯紀錄累積
       seasonStatsTracker.forEach(tracker => {
@@ -19887,47 +20696,15 @@ function initPlayoffTeams() {
     ===================================================== */
     let lastUserPlayoffGameBox = null; // 暫存該輪系列賽最後一場的 Box Score
     let playoffSeriesFinalCallback = null; // 播報結束後的結算回呼
+    let currentPlayoffSeriesLogs = []; // 當前系列賽逐場戰報紀錄
 
     function closeSeriesAndShowBoxScore() {
       // 1. 關閉系列賽播報跑馬燈
       document.getElementById('playoffSeriesModal').classList.add('hidden');
 
-      // 2. 如果該輪有收官戰 Box Score，立刻彈出豪華結算面板
+      // 2. 如果該輪有收官戰 Box Score，立刻彈出規格完全一致的 17 欄全隊 Box Score
       if (lastUserPlayoffGameBox) {
-        document.getElementById('modalMyScore').innerText = lastUserPlayoffGameBox.myScore;
-        document.getElementById('modalOppScore').innerText = lastUserPlayoffGameBox.oppScore;
-        document.getElementById('modalOppTeamName').innerText = `${lastUserPlayoffGameBox.oppTeam} (收官決勝戰)`;
-        document.getElementById('modalHighlight').innerText = lastUserPlayoffGameBox.highlight;
-
-        const tbody = document.getElementById('modalBoxScoreTbody');
-        tbody.innerHTML = lastUserPlayoffGameBox.boxScore.map(p => `
-          <tr class="hover:bg-slate-800/40">
-            <td class="py-2.5 font-sans font-bold flex items-center gap-1.5">
-              <span class="text-[10px] text-amber-400">${p.pos}</span>
-              <span class="truncate max-w-[100px]">${p.name}</span>
-            </td>
-            <td class="text-slate-400 text-[11px]">${p.trait.label}</td>
-            <td class="text-center font-bold ${p.pts >= 25 ? 'text-amber-400 font-black' : ''}">${p.pts}</td>
-            <td class="text-center">${p.reb}</td>
-            <td class="text-center">${p.ast}</td>
-            <td class="text-center text-slate-400">${p.stl}</td>
-            <td class="text-center text-slate-400">${p.blk}</td>
-            <td class="text-center text-slate-400">${p.fgPct}%</td>
-          </tr>
-        `).join('') + `
-          <tr class="text-slate-500 text-[11px]">
-            <td class="py-2 font-sans font-bold">替補席整體火力支援</td>
-            <td>板凳深度輪替</td>
-            <td class="text-center font-bold text-slate-300">${lastUserPlayoffGameBox.benchPts}</td>
-            <td colspan="5" class="text-center">--</td>
-          </tr>
-        `;
-
-const boxModal = document.getElementById('gameBoxScoreModal');
-        if (boxModal) {
-          boxModal.classList.remove('hidden');
-          boxModal.style.zIndex = "9999"; // 強制置頂於最上層
-        }
+        openGameBoxScoreModal(lastUserPlayoffGameBox, lastUserPlayoffGameBox.subTitle || '季後賽收官決勝戰');
       }
 
       // 3. 延遲 400ms 再彈出獎勵 alert，避免擋住 Box Score 的渲染
@@ -19941,10 +20718,25 @@ const boxModal = document.getElementById('gameBoxScoreModal');
       }
     }
 
+    // 提供玩家在系列賽播報清單中隨時查看任意場次的完整 Box Score
+    window.viewPlayoffGameBoxScore = function(idx) {
+      if (currentPlayoffSeriesLogs && currentPlayoffSeriesLogs[idx] && currentPlayoffSeriesLogs[idx].fullGameData) {
+        openGameBoxScoreModal(currentPlayoffSeriesLogs[idx].fullGameData, `季後賽 G${currentPlayoffSeriesLogs[idx].gameNum} 戰報`);
+      }
+    };
+
     function simulatePlayoffRound(roundIdx) {
       if (roundIdx === 0) {
         state.season.hasPlayedPlayoffs = true;
+        state.playoffStats = {
+          wins: 0,
+          losses: 0,
+          finalsPlayerStats: {}
+        };
         saveGame();
+      }
+      if (!state.playoffStats) {
+        state.playoffStats = { wins: 0, losses: 0, finalsPlayerStats: {} };
       }
 
       const matches = playoffTeamsState[roundIdx].matches;
@@ -19983,55 +20775,75 @@ const boxModal = document.getElementById('gameBoxScoreModal');
 
           if (isUserMatch) {
             const userWonGame = (isUserTeamA && winA) || (!isUserTeamA && !winA);
+            if (userWonGame) {
+              state.playoffStats.wins = (state.playoffStats.wins || 0) + 1;
+            } else {
+              state.playoffStats.losses = (state.playoffStats.losses || 0) + 1;
+            }
 
             // 擬真單場比分與個人數據生成
             const basePace = 108 + Math.round(Math.random() * 10 - 5);
             const margin = Math.floor(Math.random() * 12) + 2;
             const myScore = userWonGame ? basePace + margin : basePace - margin;
             const oppScore = userWonGame ? basePace : basePace + margin;
-            const benchPts = Math.round(myScore * 0.22);
-            const startersBudget = myScore - benchPts;
 
             const starters = ['PG', 'SG', 'SF', 'PF', 'C'].map(pos => state.startingLineup[pos]).filter(Boolean);
-            let allocatedPts = 0;
+            const bench = (state.benchLineup || []).filter(Boolean);
 
-            const singleGameBox = starters.map((p, idx) => {
-              const trait = getPlayerArchetype(p);
-              let pts = idx === starters.length - 1 
-                ? Math.max(2, startersBudget - allocatedPts)
-                : Math.max(4, Math.round(startersBudget * (0.15 + Math.random() * 0.1)));
-              allocatedPts += pts;
-
-              let reb = trait.type === 'big_rebound' ? Math.round(8 + Math.random() * 6) : Math.round(2 + Math.random() * 4);
-              let ast = trait.type === 'playmaker' ? Math.round(7 + Math.random() * 6) : Math.round(1 + Math.random() * 3);
-              let stl = Math.random() > 0.6 ? 1 : 0;
-              let blk = trait.type === 'big_rebound' ? Math.round(1 + Math.random() * 3) : 0;
-              let fgPct = Math.round(44 + Math.random() * 14);
-
-              return { name: p.name, pos: p.positions[0] || 'G', trait, pts, reb, ast, stl, blk, fgPct };
+            const singleGameData = generateGameBoxScoreData({
+              starters,
+              bench,
+              myScore,
+              oppScore,
+              win: userWonGame,
+              oppTeam: oppTeamCode,
+              badgeEffects: analyzeLineupBadges(),
+              isPlayoff: true,
+              gameNum
             });
 
-            const hero = [...singleGameBox].sort((a, b) => (b.pts + b.reb + b.ast) - (a.pts + a.reb + a.ast))[0] || { name: "先發主力", pts: 25, reb: 5, ast: 5, trait: { badge: "🔥核心" } };
-            const highlightText = userWonGame 
-              ? `🔥 G${gameNum} 勝利：【${hero.name}】(${hero.trait.badge}) 豪取 ${hero.pts}分 ${hero.reb}板 ${hero.ast}助，率隊拿下勝利！`
-              : `💔 G${gameNum} 惜敗：末節陷入得分荒，【${hero.name}】砍下 ${hero.pts}分無力回天。`;
+            // 🌟 若為總決賽，累計每位球員在總決賽的火燙攻防表現，供 FMVP 評選
+            if (roundIdx === 3) {
+              if (!state.playoffStats.finalsPlayerStats) state.playoffStats.finalsPlayerStats = {};
+              singleGameData.boxScore.forEach(sp => {
+                if (!state.playoffStats.finalsPlayerStats[sp.name]) {
+                  state.playoffStats.finalsPlayerStats[sp.name] = {
+                    name: sp.name,
+                    pos: sp.pos,
+                    pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, games: 0
+                  };
+                }
+                const st = state.playoffStats.finalsPlayerStats[sp.name];
+                st.pts += sp.pts;
+                st.reb += sp.reb;
+                st.ast += sp.ast;
+                st.stl += sp.stl;
+                st.blk += sp.blk;
+                st.games += 1;
+              });
+            }
+
+            const hero = singleGameData.bestPlayer;
+            const highlightText = singleGameData.highlight;
 
             userSeriesLogs.push({
               gameNum,
               scoreText: `${m.teamA} ${isUserTeamA ? myScore : oppScore} - ${isUserTeamA ? oppScore : myScore} ${m.teamB}`,
               userWonGame,
               currentSeriesScore: `${wA} - ${wB}`,
-              highlight: highlightText
+              highlight: highlightText,
+              fullGameData: singleGameData
             });
 
             // 🌟 每一場結束後都覆寫，最後自然存到該系列賽「最後一場（G4 ~ G7）決勝戰」的詳細 Box
+            const isChampionshipGame = (roundIdx === 3 && (wA >= 4 || wB >= 4));
+            const subTitle = isChampionshipGame 
+              ? (userWonGame ? 'NBA 總冠軍賽 封王戰' : 'NBA 總冠軍賽 收官戰') 
+              : `${roundNames[roundIdx]} 收官決勝戰`;
+
             lastUserPlayoffGameBox = {
-              oppTeam: oppTeamCode,
-              myScore,
-              oppScore,
-              benchPts,
-              boxScore: singleGameBox,
-              highlight: highlightText
+              ...singleGameData,
+              subTitle
             };
           }
         }
@@ -20082,6 +20894,7 @@ const boxModal = document.getElementById('gameBoxScoreModal');
         nextBtn.className = "w-full bg-slate-800 text-slate-500 font-black py-2.5 rounded-xl text-xs cursor-not-allowed transition";
 
         const GAME_INTERVAL = 824;
+        currentPlayoffSeriesLogs = userSeriesLogs;
 
         // 逐場跑馬燈播報
         userSeriesLogs.forEach((g, idx) => {
@@ -20097,9 +20910,14 @@ const boxModal = document.getElementById('gameBoxScoreModal');
             card.innerHTML = `
               <div class="flex justify-between items-center font-bold font-mono">
                 <span class="text-sm">Game ${g.gameNum}: ${g.scoreText}</span>
-                <span class="text-[11px] font-black px-2 py-0.5 rounded ${g.userWonGame ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500 text-white'}">
-                  ${g.userWonGame ? 'WIN 胜' : 'LOSS 败'}
-                </span>
+                <div class="flex items-center gap-2">
+                  <button onclick="window.viewPlayoffGameBoxScore(${idx})" type="button" class="text-[10px] bg-slate-900/90 hover:bg-amber-500 hover:text-slate-950 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-500/40 transition cursor-pointer shadow-sm">
+                    📊 戰報
+                  </button>
+                  <span class="text-[11px] font-black px-2 py-0.5 rounded ${g.userWonGame ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500 text-white'}">
+                    ${g.userWonGame ? 'WIN 胜' : 'LOSS 败'}
+                  </span>
+                </div>
               </div>
               <p class="text-[11px] text-slate-300 mt-1.5 leading-relaxed font-sans">${g.highlight}</p>
             `;
@@ -20127,11 +20945,25 @@ const boxModal = document.getElementById('gameBoxScoreModal');
           if (userSurvivedThisRound && roundIdx < 3) {
             const rewardTickets = roundIdx + 1;
             state.tickets += rewardTickets;
-            confetti({ particleCount: 100, spread: 70 });
-            playSound('ur_ssr');
-            alert(`🎉 恭喜拿下系列賽！挺進下一輪【${roundNames[roundIdx + 1]}】！\n獲得突破獎勵：🎟️ 抽卡券 +${rewardTickets} 張！`);
+            addNotification({
+              title: `🎉 挺進【${roundNames[roundIdx + 1]}】！`,
+              message: `恭喜拿下系列賽！挺進下一輪【${roundNames[roundIdx + 1]}】！獲得突破獎勵：🎟️ 抽卡券 +${rewardTickets} 張！`,
+              icon: '🏆',
+              type: 'achievement'
+            });
+            showRewardModal({
+              title: `🎉 挺進【${roundNames[roundIdx + 1]}】！`,
+              subtitle: '勇奪系列賽勝利，昂首挺進下一輪戰事！',
+              rewards: [
+                { icon: '🎟️', name: '系列賽晉級突破獎勵', amount: `+${rewardTickets} 張抽卡券` }
+              ]
+            });
           } else if (!userSurvivedThisRound) {
-            alert(`💔 遺憾在【${roundNames[roundIdx]}】遭到淘汰！搶七/生死戰遺恨吞敗，下季捲土重來！`);
+            showGameAlert({
+              title: '💔 季後賽遺憾淘汰',
+              message: `在【${roundNames[roundIdx]}】遭到淘汰！搶七/生死戰遺恨吞敗，下季捲土重來！`,
+              type: 'warning'
+            });
           }
 
           // 總決賽結算
@@ -20139,26 +20971,123 @@ const boxModal = document.getElementById('gameBoxScoreModal');
             if (matches[0].winner === "玩家夢幻隊") {
               state.tickets += 15;
               state.scoutPoints = (Number(state.scoutPoints) || 0) + 100;
-              confetti({ particleCount: 300 });
-              playSound('ur_ssr');
 
               const championshipLineup = [
                 ...Object.values(state.startingLineup),
                 ...state.benchLineup
               ].filter(Boolean);
 
+              // 1. 🏅 評選系列賽表現最火燙球員為 FMVP
+              const finalsStats = state.playoffStats?.finalsPlayerStats || {};
+              const playerNames = Object.keys(finalsStats);
+              let fmvpName = '';
+              let bestScore = -1;
+              let fmvpStatsObj = null;
+
+              playerNames.forEach(name => {
+                const s = finalsStats[name];
+                const g = Math.max(1, s.games || 1);
+                // 綜合火燙表現評分：場均得分 + 籃板*1.2 + 助攻*1.5 + 抄截*2 + 阻攻*2
+                const ppg = s.pts / g;
+                const rpg = s.reb / g;
+                const apg = s.ast / g;
+                const spg = s.stl / g;
+                const bpg = s.blk / g;
+                const score = ppg * 1.0 + rpg * 1.2 + apg * 1.5 + spg * 2.0 + bpg * 2.0;
+                if (score > bestScore) {
+                  bestScore = score;
+                  fmvpName = name;
+                  fmvpStatsObj = { ...s, ppg: ppg.toFixed(1), rpg: rpg.toFixed(1), apg: apg.toFixed(1) };
+                }
+              });
+
+              // 若無累計數據，Fallback 至先發戰力最高球員
+              let fmvpCard = null;
+              if (fmvpName) {
+                fmvpCard = championshipLineup.find(c => c && c.name === fmvpName) || state.inventory.find(c => c && c.name === fmvpName);
+              }
+              if (!fmvpCard && championshipLineup.length > 0) {
+                fmvpCard = [...championshipLineup].sort((a, b) => (b.ovr || 0) - (a.ovr || 0))[0];
+                fmvpName = fmvpCard.name;
+              }
+
+              // 2. 🏆 烙印金色「🏆 FMVP」徽章，並於下個賽季永久 OVR +1
+              if (fmvpCard) {
+                fmvpCard.isFmvp = true;
+                fmvpCard.fmvpBonus = (Number(fmvpCard.fmvpBonus) || 0) + 1;
+                if (!fmvpCard.legacy) fmvpCard.legacy = { games: 0, pts: 0, reb: 0, ast: 0, rings: 0, mvps: 0, fmvps: 0, traits: [] };
+                fmvpCard.legacy.fmvps = (Number(fmvpCard.legacy.fmvps) || 0) + 1;
+                if (!fmvpCard.legacy.traits.includes('總決賽MVP')) {
+                  fmvpCard.legacy.traits.push('總決賽MVP');
+                }
+                // 重新計算 OVR：獲得永久 +1 OVR 加成
+                fmvpCard.ovr = calculateCardOvr(fmvpCard.baseOvr, fmvpCard.stars, fmvpCard.fmvpBonus);
+                if (fmvpCard.legacy.traits.includes('得分機器')) {
+                  fmvpCard.ovr += 1;
+                }
+              }
+
+              // 全隊出戰成員戒指累積 +1
               championshipLineup.forEach(card => {
-                if (!card.legacy) card.legacy = { games: 0, pts: 0, reb: 0, ast: 0, rings: 0, mvps: 0, traits: [] };
+                if (!card.legacy) card.legacy = { games: 0, pts: 0, reb: 0, ast: 0, rings: 0, mvps: 0, fmvps: 0, traits: [] };
                 card.legacy.rings = (card.legacy.rings || 0) + 1;
                 if (!card.legacy.traits.includes('冠軍成員')) {
                   card.legacy.traits.push('冠軍成員');
                 }
               });
 
-              alert("🏆 狂賀！奪得 2026 NBA 總冠軍！\n登頂世界之巔：🎟️ 抽卡券 +15 張、💎 選秀碎片 +100 點！\n陣容所有出戰成員已獲頒【總冠軍戒指 💍】與【冠軍成員】特質！");
+              // 3. 💍 生成刻字 3D 冠軍戒指至展示櫃
+              const ringYear = Number(state.season?.year) || 2026;
+              const playoffRecord = `${state.playoffStats?.wins || 16}-${state.playoffStats?.losses || 3}`;
+              const finalsOpponent = (matches[0].teamA === "玩家夢幻隊" ? matches[0].teamB : matches[0].teamA) || "對手戰隊";
+              
+              const fmvpSummaryText = fmvpStatsObj 
+                ? `場均 ${fmvpStatsObj.ppg}分 ${fmvpStatsObj.rpg}板 ${fmvpStatsObj.apg}助`
+                : '總決賽火燙統治級表現';
+
+              const newRing = {
+                id: `ring_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+                year: ringYear,
+                record: playoffRecord,
+                opponent: finalsOpponent,
+                fmvpName: fmvpCard ? fmvpCard.name : fmvpName,
+                fmvpCardId: fmvpCard ? fmvpCard.cardId : null,
+                fmvpStats: fmvpSummaryText,
+                nbaId: fmvpCard ? fmvpCard.nbaId : 0,
+                awardedAt: Date.now()
+              };
+
+              if (!Array.isArray(state.championshipRings)) {
+                state.championshipRings = [];
+              }
+              state.championshipRings.unshift(newRing);
+
+              addNotification({
+                title: '👑 狂賀！奪得 NBA 總冠軍！',
+                message: `登頂世界之巔！系列賽以 ${playoffRecord} 擊敗【${finalsOpponent}】！【${fmvpCard ? fmvpCard.name : ''}】榮膺 FMVP (永久 OVR+1)！`,
+                icon: '💍',
+                type: 'achievement'
+              });
+
+              // 4. 🎉 觸發奪冠香檳遊行慶典 (報紙頭版、拉砲彩帶、頒獎台、3D 戒指與燙金 FMVP)
+              showChampionshipCelebration({
+                ring: newRing,
+                fmvpCard: fmvpCard,
+                fmvpStats: fmvpSummaryText,
+                record: playoffRecord,
+                opponent: finalsOpponent,
+                year: ringYear
+              });
+
             } else {
               state.tickets += 3;
-              alert(`🏀 總決賽落幕：由【${matches[0].winner}】捧起歐布萊恩金盃，獲得亞軍參賽獎勵 3 張抽卡券！`);
+              showRewardModal({
+                title: '🏀 總決賽落幕',
+                subtitle: `由【${matches[0].winner}】捧起歐布萊恩金盃，獲得亞軍參賽獎勵！`,
+                rewards: [
+                  { icon: '🎟️', name: '亞軍獎勵抽卡券', amount: '+3 張' }
+                ]
+              });
             }
           }
 
@@ -20189,6 +21118,8 @@ const defaultState = {
       isAdmin: false,
       claimedTeamRewards: [],
       redeemedCodes: [],
+      championshipRings: [],
+      playoffStats: { wins: 0, losses: 0, finalsPlayerStats: {} },
 dailyQuests: {
         date: '',
         lastLoginDate: '', // 追蹤登入日期以計算連續天數
@@ -20275,6 +21206,8 @@ function saveGame() {
       if (typeof s.season.threePtContestShooter === 'undefined') s.season.threePtContestShooter = null;
       if (typeof s.season.threePtContestScore === 'undefined') s.season.threePtContestScore = null;
       if (typeof s.season.hasPlayedPlayoffs === 'undefined') s.season.hasPlayedPlayoffs = false;
+      if (!Array.isArray(s.championshipRings)) s.championshipRings = [];
+      if (!s.playoffStats || typeof s.playoffStats !== 'object') s.playoffStats = { wins: 0, losses: 0, finalsPlayerStats: {} };
 
       // 2. 建立選手快查表 (依據官方 NBA_PLAYERS 補齊 nbaId、realOvr、positions)
       const playerLookup = new Map();
@@ -20319,14 +21252,19 @@ function saveGame() {
           c.realOvr = Number(refPlayer?.realOvr || refPlayer?.real_ovr || c.baseOvr || c.ovr || 70);
         }
         if (!c.baseOvr) c.baseOvr = c.realOvr;
-        c.ovr = calculateCardOvr(c.baseOvr, c.stars);
+        const fmvpBonus = Number(c.fmvpBonus || c.legacy?.fmvps || 0);
+        c.fmvpBonus = fmvpBonus;
+        c.isFmvp = !!(c.isFmvp || fmvpBonus > 0);
+        c.ovr = calculateCardOvr(c.baseOvr, c.stars, fmvpBonus);
 
         if (!c.positions || !Array.isArray(c.positions) || c.positions.length === 0) {
           c.positions = refPlayer?.positions ? [...refPlayer.positions] : (refPlayer?.pos ? [...refPlayer.pos] : ['PG']);
         }
 
         if (!c.legacy || typeof c.legacy !== 'object') {
-          c.legacy = { seasons: 0, games: 0, pts: 0, reb: 0, ast: 0, rings: 0, mvps: 0, traits: [] };
+          c.legacy = { seasons: 0, games: 0, pts: 0, reb: 0, ast: 0, rings: 0, mvps: 0, fmvps: fmvpBonus, traits: [] };
+        } else if (typeof c.legacy.fmvps === 'undefined') {
+          c.legacy.fmvps = fmvpBonus;
         }
 
         if (!c.rarity) {
@@ -20383,15 +21321,22 @@ function saveGame() {
       }
     }
 
-    function resetGame() {
-      if (!confirm("⚠️ 確定要重置 ToeicQuest NBA 的遊戲存檔嗎？")) return;
+    async function resetGame() {
+      const confirmed = await showGameConfirm({
+        title: '⚠️ 重置遊戲存檔',
+        message: '確定要重置 ToeicQuest NBA 的遊戲存檔嗎？所有收集的球員卡、賽季數據與單字庫進度將清空重置。',
+        confirmText: '確定重置',
+        cancelText: '取消',
+        type: 'danger'
+      });
+      if (!confirmed) return;
       localStorage.removeItem(STORAGE_KEY);
       window.location.reload();
     }
 
     function adminUnlockAllPlayers() {
       if (!state.isAdmin) {
-        alert("⚠️ 請先啟用管理員權限！");
+        showToast("⚠️ 請先啟用管理員權限！", "warning");
         return;
       }
       NBA_PLAYERS.forEach(player => {
@@ -20400,10 +21345,9 @@ function saveGame() {
           state.inventory.push(createCard(player, 1));
         }
       });
-      confetti({ particleCount: 200, spread: 100 });
-      alert(`⚡ 已成功解鎖全聯盟 30 隊共 ${state.inventory.length} 張球員卡！`);
       saveGame();
       renderAll();
+      showToast(`⚡ 已成功解鎖全聯盟 30 隊共 ${state.inventory.length} 張球員卡！`, "success");
     }
     /*
  =====================================================
@@ -20486,6 +21430,12 @@ const BADGE_ENCYCLOPEDIA = {
     color: "text-orange-400 border-orange-500/50 bg-orange-950/60",
     condition: "放置於板凳席 (Bench) 且實力評級 real_ovr >= 80",
     buff: "【板凳匪徒】替補上陣完全不吃板凳降分懲罰，單場為替補席額外貢獻 +6 分火力。"
+  },
+  "總決賽MVP": {
+    icon: "🏆",
+    color: "text-amber-300 border-amber-400 bg-amber-950/70 shadow-[0_0_10px_rgba(245,158,11,0.5)]",
+    condition: "率領球隊奪得 NBA 總冠軍並榮膺 FMVP",
+    buff: "【總決賽傳奇】卡面永久烙印燙金印記，全賽季 OVR 永久 +1！季後賽關鍵關鍵戰役攻防表現全面昇華。"
   }
 };
 
@@ -20552,6 +21502,11 @@ function getPlayerBadges(player) {
   const isBench = state.benchLineup?.some(p => p && (p.cardId === player.cardId || p.name === player.name));
   if (isBench && (Number(player.realOvr || player.ovr) >= 80)) {
     badges.push({ name: "第六人", ...BADGE_ENCYCLOPEDIA["第六人"] });
+  }
+
+  // 11. 總決賽MVP (FMVP 傳奇榮譽印記)
+  if (player.legacy?.fmvps > 0 || player.isFmvp) {
+    badges.push({ name: "總決賽MVP", ...BADGE_ENCYCLOPEDIA["總決賽MVP"] });
   }
 
   return badges;
@@ -20632,22 +21587,38 @@ function showPlayerDetails(e, playerIdentifier) {
   }
 
   if (!p) {
-    alert("⚠️ 查無該球員的詳細數據！");
+    showToast("⚠️ 查無該球員的詳細數據！", "warning");
     return;
   }
 
-  const imgEl = document.getElementById('detailPlayerImg');
-  if (imgEl) {
-    imgEl.src = getPlayerImgUrl(p.nbaId || p.id);
-    imgEl.onerror = () => { imgEl.src = 'https://cdn.nba.com/headshots/nba/latest/1040x760/fallback.png'; };
-  }
-  
   document.getElementById('detailPlayerName').innerText = p.name || '--';
   document.getElementById('detailPlayerTeam').innerText = p.team || '--';
   document.getElementById('detailPlayerPos').innerText = Array.isArray(p.positions) ? p.positions.join('/') : (p.pos ? p.pos.join('/') : '--');
   document.getElementById('detailPlayerRarity').innerText = p.rarity || determineRarityByOvr(p.ovr || 75);
   document.getElementById('detailPlayerOvr').innerText = p.ovr || p.baseOvr || '--';
   document.getElementById('detailPlayerRealOvr').innerText = p.realOvr || p.real_ovr || p.baseOvr || '--';
+
+  const starEl = document.getElementById('detailPlayerStars');
+  if (starEl) {
+    const starCount = Math.max(1, p.stars || 1);
+    starEl.innerText = '★'.repeat(starCount);
+  }
+
+  // 渲染生涯榮譽與歷史累積 (Card Detail & Legacy)
+  const legacyBox = document.getElementById('detailPlayerLegacy');
+  if (legacyBox) {
+    if (p.legacy && (p.legacy.games > 0 || p.legacy.rings > 0 || p.legacy.pts > 0 || p.legacy.seasons > 0 || (p.legacy.fmvps > 0 || p.isFmvp))) {
+      document.getElementById('legacyRings').innerText = `💍 ${p.legacy.rings || 0}`;
+      document.getElementById('legacyPts').innerText = `${p.legacy.pts || 0} 分`;
+      document.getElementById('legacyGames').innerText = `${p.legacy.games || 0} 場`;
+      document.getElementById('legacySeasons').innerText = `${p.legacy.seasons || 0} 季`;
+      const fmvpEl = document.getElementById('legacyFmvps');
+      if (fmvpEl) fmvpEl.innerText = `🏆 ${p.legacy.fmvps || (p.isFmvp ? 1 : 0)}`;
+      legacyBox.classList.remove('hidden');
+    } else {
+      legacyBox.classList.add('hidden');
+    }
+  }
 
   // 渲染持有徽章列表（點擊徽章可展開說明）
   const badgeList = getPlayerBadges(p);
@@ -20797,6 +21768,9 @@ function closePlayerDetailModal() {
       // 生涯戒指與特質
       const rings = player.legacy?.rings || 0;
       const ringBadge = rings > 0 ? `<span class="text-[9px] font-mono text-amber-300">💍×${rings}</span>` : '';
+      const fmvpBadge = (player.legacy?.fmvps > 0 || player.isFmvp) 
+        ? `<span class="text-[8px] font-black fmvp-gold-badge text-slate-950 px-1 py-0.5 rounded border border-yellow-200 shadow-[0_0_8px_rgba(245,158,11,0.7)] tracking-tighter inline-flex items-center gap-0.5" title="總決賽 MVP 燙金印記 (次季/永久 OVR +1)">🏆FMVP</span>` 
+        : '';
       const traitBadges = (player.legacy?.traits || []).map(t => 
         `<span class="text-[8px] bg-amber-500/20 text-amber-300 px-1 rounded border border-amber-500/30">${t}</span>`
       ).join('');
@@ -20815,6 +21789,7 @@ function closePlayerDetailModal() {
         <div class="flex items-center gap-1">
           <button onclick="showPlayerDetails(event, '${player.cardId}')" type="button" class="text-[11px] hover:scale-125 transition cursor-pointer p-0.5" title="查看真實球員數據">👁️</button>
           ${ringBadge}
+          ${fmvpBadge}
           <span class="font-black ${player.isLegend ? 'text-slate-200' : (player.rarity === 'UR' ? 'text-pink-400' : 'text-amber-400')} pointer-events-none">
             ${player.rarity} ★${player.stars || 1}
           </span>
@@ -20831,7 +21806,7 @@ function closePlayerDetailModal() {
           <div class="pointer-events-none w-full">
             <p class="text-xs font-bold text-slate-200 truncate w-full">${player.name}</p>
             <div class="text-[10px] font-mono text-slate-400 my-0.5">
-              OVR <span class="text-amber-400 font-bold">${player.ovr}</span> ｜ <span class="text-indigo-300 font-bold">${(player.positions || []).join('/')}</span>
+              OVR <span class="text-amber-400 font-bold">${player.ovr}</span>${(player.fmvpBonus || player.legacy?.fmvps) ? ` <span class="text-[9px] text-amber-300 font-bold">(+${player.fmvpBonus || player.legacy?.fmvps})</span>` : ''} ｜ <span class="text-indigo-300 font-bold">${(player.positions || []).join('/')}</span>
             </div>
             <div class="text-[9px] font-mono text-slate-500 border-t border-slate-900 pt-0.5 mt-0.5">
               生涯 ${player.legacy?.pts || 0}分 ｜ ${player.legacy?.games || 0}場
@@ -21199,9 +22174,21 @@ if (state.season.lastSimRecord) {
       state.dailyQuests.loginClaimed = true;
       state.tickets += 10;
 
-      confetti({ particleCount: 150, spread: 80 });
-      playSound('ur_ssr');
-      alert(`🎉 簽到成功！\n已連續登入 ${state.streak} 天！\n成功領取【每日登入好禮】：🎟️ 抽卡券 +10 張！`);
+      addNotification({
+        title: '🎉 每日簽到成功！',
+        message: `已連續登入 ${state.streak} 天，領取每日登入好禮：🎟️ 抽卡券 +10 張！`,
+        icon: '🎁',
+        type: 'reward'
+      });
+
+      showRewardModal({
+        title: '🎉 每日簽到成功！',
+        subtitle: `已連續登入 ${state.streak} 天！維持專注習慣！`,
+        rewards: [
+          { icon: '🎟️', name: '每日抽卡券', amount: '+10 張' },
+          { icon: '🔥', name: '連續登入天數', amount: `${state.streak} 天` }
+        ]
+      });
 
       saveGame();
       renderAll();
@@ -21334,21 +22321,15 @@ if (state.season.lastSimRecord) {
       if (qIndex === 1 && !q.claimed.q1 && q.wordAddedToday >= 10) {
         q.claimed.q1 = true;
         state.scoutPoints = (Number(state.scoutPoints) || 0) + 30;
-        confetti({ particleCount: 60, spread: 50 });
-        playSound('flip');
-        alert("🎉 達成任務 1！獲得 💎 選秀碎片 +30 點！");
+        showToast("🎉 達成任務 1【學習 10 個單字】！獲得 💎 選秀碎片 +30 點！", "success");
       } else if (qIndex === 2 && !q.claimed.q2 && q.quizPerfectToday) {
         q.claimed.q2 = true;
         state.scoutPoints = (Number(state.scoutPoints) || 0) + 30;
-        confetti({ particleCount: 60, spread: 50 });
-        playSound('flip');
-        alert("🎉 達成任務 2！獲得 💎 選秀碎片 +30 點！");
+        showToast("🎉 達成任務 2【小考拿下滿分】！獲得 💎 選秀碎片 +30 點！", "success");
       } else if (qIndex === 3 && !q.claimed.q3 && q.pomodoroDoneToday >= 1) {
         q.claimed.q3 = true;
         state.scoutPoints = (Number(state.scoutPoints) || 0) + 40;
-        confetti({ particleCount: 60, spread: 50 });
-        playSound('flip');
-        alert("🎉 達成任務 3！獲得 💎 選秀碎片 +40 點！");
+        showToast("🎉 達成任務 3【完成 1 次專注番茄鐘】！獲得 💎 選秀碎片 +40 點！", "success");
       }
 
       saveGame();
@@ -21363,9 +22344,22 @@ if (state.season.lastSimRecord) {
       if (q.claimed.q1 && q.claimed.q2 && q.claimed.q3 && !q.claimed.all) {
         q.claimed.all = true;
         state.tickets += 5;
-        confetti({ particleCount: 200, spread: 90 });
-        playSound('ur_ssr');
-        alert("🏆 狂賀！今日 3 大學習任務全數達成！\n獲得全解終極獎勵：🎟️ 抽卡券 +5 張！");
+
+        addNotification({
+          title: '🏆 每日任務全解達成！',
+          message: '今日 3 大學習與訓練目標完美全解！已領取終極獎勵 🎟️ 抽卡券 +5 張！',
+          icon: '👑',
+          type: 'achievement'
+        });
+
+        showRewardModal({
+          title: '🏆 每日任務全數達成！',
+          subtitle: '今日 3 大學習與訓練目標完美達標！',
+          rewards: [
+            { icon: '🎟️', name: '全解終極獎勵', amount: '+5 張抽卡券' }
+          ]
+        });
+
         saveGame();
         renderAll();
       }
@@ -21385,6 +22379,10 @@ if (state.season.lastSimRecord) {
       document.getElementById('streakCount').innerText = state.streak;
       document.getElementById('scoutPointsCount').innerText = state.scoutPoints;
       document.getElementById('sortSelector').value = state.currentInventorySort;
+
+      const ringCount = Array.isArray(state.championshipRings) ? state.championshipRings.length : 0;
+      const headerRingsEl = document.getElementById('headerRingsCount');
+      if (headerRingsEl) headerRingsEl.innerText = ringCount;
 
       saveGame();
       renderRoster();
@@ -21472,17 +22470,36 @@ playSound('click');
       if (state.claimedTeamRewards.includes(teamCode)) return;
       state.claimedTeamRewards.push(teamCode);
       state.tickets += 10;
-      confetti({ particleCount: 150 });
-      alert(`🏆 達成【${teamCode} 隊史制霸】成就，獲得 10 張抽卡券！`);
+
+      addNotification({
+        title: `🏆 ${teamCode} 隊史制霸成就！`,
+        message: `成功集齊 ${teamCode} 全隊球員卡，獲得 10 張抽卡券！`,
+        icon: '👑',
+        type: 'achievement'
+      });
+
+      showRewardModal({
+        title: '🏆 隊史制霸成就達成！',
+        subtitle: `恭喜集齊【${teamCode}】全隊 15 位現役與傳奇球星！`,
+        rewards: [
+          { icon: '🎟️', name: '隊史制霸大禮', amount: '+10 張抽卡券' },
+          { icon: '👑', name: `${teamCode} 榮譽隊徽`, amount: '已解鎖' }
+        ]
+      });
+
       saveGame();
       renderAll();
       openBinderModal();
     }
 
     function openPlayoffBracketModal() {
-// 🌟 防刷機制：本賽季若已挑戰過季後賽，直接擋下
+      // 🌟 防刷機制：本賽季若已挑戰過季後賽，直接擋下
       if (state.season.hasPlayedPlayoffs) {
-        alert("⚠️ 本賽季你已經參加過 16 強季後賽囉！請先完成下一個 82 場例行賽季！");
+        showGameAlert({
+          title: '季後賽額度已用畢',
+          message: '⚠️ 本賽季你已經參加過 16 強季後賽囉！請先至「賽季」頁面完成下一個 82 場例行賽季！',
+          type: 'info'
+        });
         return;
       }
 
@@ -21503,8 +22520,7 @@ playSound('click');
         state.isAdmin = true; state.tickets = 999999; state.scoutPoints = 999999;
         adminUnlockAllPlayers();
         closeRedeemModal();
-        confetti({ particleCount: 200 });
-        alert("⚡ 管理員測試權限已啟用！");
+        showToast("⚡ 管理員測試權限已啟用！全隊解鎖，無限抽卡與碎片！", "success");
         saveGame();
         renderAll();
         return;
@@ -21513,12 +22529,17 @@ playSound('click');
         state.tickets += 100;
         state.redeemedCodes.push('songray16');
         closeRedeemModal();
-        confetti({ particleCount: 150 });
-        alert("🎉 獲得 100 張抽卡券！");
+        showRewardModal({
+          title: '🎉 兌換成功！',
+          subtitle: '成功使用專屬兌換碼：songray16',
+          rewards: [
+            { icon: '🎟️', name: '特典抽卡券', amount: '+100 張' }
+          ]
+        });
         saveGame();
         renderAll();
       } else {
-        alert("❌ 兌換碼無效！");
+        showToast("❌ 兌換碼無效或已被使用！", "error");
       }
     }
 
@@ -21533,7 +22554,7 @@ playSound('click');
         btn.innerText = "暫停倒數";
         pomodoroInterval = setInterval(() => {
           if (pomodoroSecondsLeft <= 0) {
-checkAndResetDailyQuests();
+            checkAndResetDailyQuests();
             state.dailyQuests.pomodoroDoneToday = (state.dailyQuests.pomodoroDoneToday || 0) + 1;
             clearInterval(pomodoroInterval);
             isPomodoroRunning = false;
@@ -21542,8 +22563,23 @@ checkAndResetDailyQuests();
             btn.innerText = "開始專注";
             state.toeic.totalListening += 25;
             state.tickets += 1;
-            confetti({ particleCount: 100, spread: 80 });
-            alert("🎉 恭喜完成 25 分鐘多益專注！已增加 25 分鐘時長，並獲得 1 🎟️ 抽卡券！");
+
+            addNotification({
+              title: '⏱️ 專注學習達標！',
+              message: '完成 25 分鐘多益專注，獲得 1 張抽卡券！',
+              icon: '🎯',
+              type: 'system'
+            });
+
+            showRewardModal({
+              title: '🎉 專注學習達標！',
+              subtitle: '完成 25 分鐘多益沉浸式高效專注！',
+              rewards: [
+                { icon: '⏱️', name: '專注時長累計', amount: '+25 分鐘' },
+                { icon: '🎟️', name: '自律學習獎勵', amount: '+1 張抽卡券' }
+              ]
+            });
+
             saveGame();
             renderAll();
           } else {
@@ -21622,70 +22658,82 @@ function flipCard() {
       if (!item) return;
       const ans = document.getElementById('spellingInput').value.trim().toLowerCase();
       if (ans === item.word.toLowerCase()) {
-playSound('correct'); // 👈 新增：拼字正確專屬音效
+        playSound('correct'); // 👈 新增：拼字正確專屬音效
         confetti({ particleCount: 30, spread: 50 });
-        alert("🎉 拼字完全正確！");
+        showToast("🎉 拼字完全正確！太棒了！", "success");
         answerQuiz(true);
       } else {
-playSound('buzz'); // 👈 新增：拼字錯誤音效
-        alert(`❌ 答錯囉！正確是：${item.word}`);
+        playSound('buzz'); // 👈 新增：拼字錯誤音效
+        showToast(`❌ 答錯囉！正確拼法是：${item.word}`, "error");
         answerQuiz(false);
       }
     }
     function answerQuiz(isCorrect) {
       const item = getCurrentQuizWord();
       if (!item) return;
-if (isCorrect) {
-playSound('correct'); // 👈 新增：記住了專屬清亮音效
-  item.box = Math.min((item.box || 1) + 1, 3);
-  state.toeic.quizStreak++;
-  // 累加總答對次數
-  state.toeic.totalMastered = (state.toeic.totalMastered || 0) + 1;
-} else {
-playSound('buzz'); // 👈 新增：單字不熟降回 ★1 提示音
-  item.box = 1;
-  state.toeic.quizStreak = 0;
-}
+      if (isCorrect) {
+        playSound('correct'); // 👈 新增：記住了專屬清亮音效
+        item.box = Math.min((item.box || 1) + 1, 3);
+        state.toeic.quizStreak++;
+        // 累加總答對次數
+        state.toeic.totalMastered = (state.toeic.totalMastered || 0) + 1;
+      } else {
+        playSound('buzz'); // 👈 新增：單字不熟降回 ★1 提示音
+        item.box = 1;
+        state.toeic.quizStreak = 0;
+      }
 
-// 介面顯示目前進度
-document.getElementById('quizStreakIndicator').innerText = `累積: ${state.toeic.totalMastered || 0}/100 ｜ 連對: ${state.toeic.quizStreak}`;
+      // 介面顯示目前進度
+      document.getElementById('quizStreakIndicator').innerText = `累積: ${state.toeic.totalMastered || 0}/100 ｜ 連對: ${state.toeic.quizStreak}`;
 
-// 達到累積 100 題門檻觸發 ON FIRE
-if ((state.toeic.totalMastered || 0) >= 100) {
-  document.getElementById('onFireBadge').classList.remove('hidden');
-  if (state.toeic.totalMastered === 100) {
-    confetti({ particleCount: 100, spread: 80 });
-    playSound('ur_ssr');
-    alert("🔥 達成累積背誦 100 單字！全隊啟動 ON FIRE 狀態 (+2 OVR)！");
-  }
-}      isFlipped = false;
+      // 達到累積 100 題門檻觸發 ON FIRE
+      if ((state.toeic.totalMastered || 0) >= 100) {
+        document.getElementById('onFireBadge').classList.remove('hidden');
+        if (state.toeic.totalMastered === 100) {
+          addNotification({
+            title: '🔥 全隊進入 ON FIRE 狀態！',
+            message: '達成累積背誦 100 單字！全隊球員 OVR 永久獲得 +2 加成！',
+            icon: '🔥',
+            type: 'achievement'
+          });
+          showRewardModal({
+            title: '🔥 全隊 ON FIRE 啟動！',
+            subtitle: '達成累積精熟背誦 100 個多益必考單字里程碑！',
+            rewards: [
+              { icon: '🔥', name: '全隊戰力狂飆', amount: '全隊 OVR +2' },
+              { icon: '🧠', name: '單字精熟大師', amount: '100 字達標' }
+            ]
+          });
+        }
+      }
+      isFlipped = false;
       document.getElementById('flashMeaning').classList.add('hidden');
       document.getElementById('flashExample').classList.add('hidden');
       state.toeic.currentQuizIndex++;
       saveGame();
       renderAll();
     }
-function speakWord(e) {
-  if (e) {
-    e.stopPropagation(); // 阻止事件冒泡，避免點發音按鈕時同時觸發翻卡
-  }
+    function speakWord(e) {
+      if (e) {
+        e.stopPropagation(); // 阻止事件冒泡，避免點發音按鈕時同時觸發翻卡
+      }
 
-  const item = getCurrentQuizWord();
-  if (!item || !item.word) return;
+      const item = getCurrentQuizWord();
+      if (!item || !item.word) return;
 
-  if (!('speechSynthesis' in window)) {
-    alert("⚠️ 您的瀏覽器不支援語音朗讀功能！");
-    return;
-  }
+      if (!('speechSynthesis' in window)) {
+        showToast("⚠️ 您的瀏覽器不支援語音朗讀功能！", "warning");
+        return;
+      }
 
-  // 取消正在播放的語音佇列，避免卡住
-  window.speechSynthesis.cancel();
+      // 取消正在播放的語音佇列，避免卡住
+      window.speechSynthesis.cancel();
 
-  const utterance = new SpeechSynthesisUtterance(item.word);
-  utterance.lang = 'en-US';
-  utterance.rate = 0.9; // 稍慢速，發音更清晰
-  window.speechSynthesis.speak(utterance);
-}
+      const utterance = new SpeechSynthesisUtterance(item.word);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.9; // 稍慢速，發音更清晰
+      window.speechSynthesis.speak(utterance);
+    }
     function toggleQuizMode() {
       state.toeic.isSpellingMode = !state.toeic.isSpellingMode;
       document.getElementById('quizModeBtn').innerText = `模式: ${state.toeic.isSpellingMode ? '拼字填空' : '翻卡'}`;
@@ -21693,153 +22741,149 @@ function speakWord(e) {
       document.getElementById('spellingContent').classList.toggle('hidden', !state.toeic.isSpellingMode);
       updateQuizCard();
     }
-function addWord(e) {
-  e.preventDefault();
-  const word = document.getElementById('inputWord').value.trim();
-  const pos = document.getElementById('inputPos').value;
-  const meaning = document.getElementById('inputMeaning').value.trim();
-  const example = document.getElementById('inputExample').value.trim();
-  if (!word || !meaning) return;
+    function addWord(e) {
+      e.preventDefault();
+      const word = document.getElementById('inputWord').value.trim();
+      const pos = document.getElementById('inputPos').value;
+      const meaning = document.getElementById('inputMeaning').value.trim();
+      const example = document.getElementById('inputExample').value.trim();
+      if (!word || !meaning) return;
 
-  // 1. 新增至單字庫
-  state.toeic.vocabList.unshift({
-    id: Date.now(),
-    word,
-    pos,
-    meaning,
-    example,
-    box: 1
-  });
+      // 1. 新增至單字庫
+      state.toeic.vocabList.unshift({
+        id: Date.now(),
+        word,
+        pos,
+        meaning,
+        example,
+        box: 1
+      });
 
-  // 2. 鼓勵手動學習：新增 1 個單字獎勵 1 點選秀碎片 (scoutPoints)
-  state.scoutPoints = (Number(state.scoutPoints) || 0) + 1;
-checkAndResetDailyQuests();
-  state.dailyQuests.wordAddedToday = (state.dailyQuests.wordAddedToday || 0) + 1;
+      // 2. 鼓勵手動學習：新增 1 個單字獎勵 1 點選秀碎片 (scoutPoints)
+      state.scoutPoints = (Number(state.scoutPoints) || 0) + 1;
+      checkAndResetDailyQuests();
+      state.dailyQuests.wordAddedToday = (state.dailyQuests.wordAddedToday || 0) + 1;
 
-  // 3. 重設表單與存檔更新
-  document.getElementById('addWordForm').reset();
-  saveGame();
-updateVocabProgressBar();
-  renderAll();
+      // 3. 重設表單與存檔更新
+      document.getElementById('addWordForm').reset();
+      saveGame();
+      updateVocabProgressBar();
+      renderAll();
 
-  // 4. 回饋效果
-  playSound('flip');
-  confetti({ particleCount: 35, spread: 50 });
-  alert(`🎉 成功新增單字【${word}】！\n獲得獎勵：💎 選秀碎片 +1 點！`);
-}
-function addFiveRandomWords() {
-  checkAndResetDailyQuests();
-
-  // 1. 取得千字庫（優先抓取全域變數，若無則降級為預設詞庫）
-  let rawDb = [];
-  if (typeof TOEIC_1000_RAW !== 'undefined' && Array.isArray(TOEIC_1000_RAW) && TOEIC_1000_RAW.length > 0) {
-    rawDb = TOEIC_1000_RAW;
-  } else if (typeof TOEIC_WORDS !== 'undefined' && Array.isArray(TOEIC_WORDS)) {
-    rawDb = TOEIC_WORDS;
-  } else {
-    alert("⚠️ 未偵測到 toeic1000.js 單字庫，請確認腳本是否正確載入！");
-    return;
-  }
-
-  // 2. 標準化資料格式（自動相容「二維陣列」或「物件陣列」）
-  const normalizedDb = rawDb.map((item, idx) => {
-    if (Array.isArray(item)) {
-      return {
-        word: String(item[0] || '').trim(),
-        pos: String(item[1] || 'n.').trim(),
-        meaning: String(item[2] || '').trim(),
-        example: String(item[3] || '').trim()
-      };
-    } else if (typeof item === 'object' && item !== null) {
-      return {
-        word: String(item.word || '').trim(),
-        pos: String(item.pos || 'n.').trim(),
-        meaning: String(item.meaning || '').trim(),
-        example: String(item.example || '').trim()
-      };
+      // 4. 回饋效果
+      playSound('flip');
+      showToast(`🎉 成功新增單字【${word}】！獲得 💎 選秀碎片 +1 點！`, "success");
     }
-    return null;
-  }).filter(item => item && item.word && item.meaning);
+    function addFiveRandomWords() {
+      checkAndResetDailyQuests();
 
-  if (normalizedDb.length === 0) {
-    alert("⚠️ 單字庫資料為空或格式不符！");
-    return;
-  }
+      // 1. 取得千字庫（優先抓取全域變數，若無則降級為預設詞庫）
+      let rawDb = [];
+      if (typeof TOEIC_1000_RAW !== 'undefined' && Array.isArray(TOEIC_1000_RAW) && TOEIC_1000_RAW.length > 0) {
+        rawDb = TOEIC_1000_RAW;
+      } else if (typeof TOEIC_WORDS !== 'undefined' && Array.isArray(TOEIC_WORDS)) {
+        rawDb = TOEIC_WORDS;
+      } else {
+        showToast("⚠️ 未偵測到 toeic1000.js 單字庫，請確認腳本是否正確載入！", "warning");
+        return;
+      }
 
-  // 3. 取得目前已擁有的單字小寫集合，避免重複抽取
-  const ownedSet = new Set((state.toeic.vocabList || []).map(v => (v.word || '').toLowerCase()));
+      // 2. 標準化資料格式（自動相容「二維陣列」或「物件陣列」）
+      const normalizedDb = rawDb.map((item, idx) => {
+        if (Array.isArray(item)) {
+          return {
+            word: String(item[0] || '').trim(),
+            pos: String(item[1] || 'n.').trim(),
+            meaning: String(item[2] || '').trim(),
+            example: String(item[3] || '').trim()
+          };
+        } else if (typeof item === 'object' && item !== null) {
+          return {
+            word: String(item.word || '').trim(),
+            pos: String(item.pos || 'n.').trim(),
+            meaning: String(item.meaning || '').trim(),
+            example: String(item.example || '').trim()
+          };
+        }
+        return null;
+      }).filter(item => item && item.word && item.meaning);
 
-  // 4. 篩選出未學習的生詞
-  let unlearned = normalizedDb.filter(item => !ownedSet.has(item.word.toLowerCase()));
+      if (normalizedDb.length === 0) {
+        showToast("⚠️ 單字庫資料為空或格式不符！", "warning");
+        return;
+      }
 
-  // 若已全部抽完，重置候選池
-  if (unlearned.length === 0) {
-    unlearned = [...normalizedDb];
-  }
+      // 3. 取得目前已擁有的單字小寫集合，避免重複抽取
+      const ownedSet = new Set((state.toeic.vocabList || []).map(v => (v.word || '').toLowerCase()));
 
-  // 5. 隨機打亂並抽取 5 個
-  unlearned.sort(() => Math.random() - 0.5);
-  const picked = unlearned.slice(0, 5);
+      // 4. 篩選出未學習的生詞
+      let unlearned = normalizedDb.filter(item => !ownedSet.has(item.word.toLowerCase()));
 
-  // 6. 規範化寫入玩家單字庫（保證欄位完全對齊）
-  picked.forEach(item => {
-    state.toeic.vocabList.unshift({
-      id: Date.now() + Math.floor(Math.random() * 100000),
-      word: item.word,
-      pos: item.pos,
-      meaning: item.meaning,
-      example: item.example,
-      box: 1
-    });
-  });
+      // 若已全部抽完，重置候選池
+      if (unlearned.length === 0) {
+        unlearned = [...normalizedDb];
+      }
 
-  // 7. 更新每日任務進度、存檔並刷新 UI
-  state.dailyQuests.wordAddedToday = (state.dailyQuests.wordAddedToday || 0) + picked.length;
-  saveGame();
-  renderAll();
+      // 5. 隨機打亂並抽取 5 個
+      unlearned.sort(() => Math.random() - 0.5);
+      const picked = unlearned.slice(0, 5);
 
-  playSound('flip');
-  confetti({ particleCount: 50, spread: 60 });
+      // 6. 規範化寫入玩家單字庫（保證欄位完全對齊）
+      picked.forEach(item => {
+        state.toeic.vocabList.unshift({
+          id: Date.now() + Math.floor(Math.random() * 100000),
+          word: item.word,
+          pos: item.pos,
+          meaning: item.meaning,
+          example: item.example,
+          box: 1
+        });
+      });
 
-  const remaining = Math.max(0, unlearned.length - picked.length);
-  alert(`🎉 成功抽取 5 個多益高頻單字！`);
-}
-/* =====================================================
-   📝 10 題四選一測驗邏輯
-===================================================== */
-let activeQuizList = [];
-let currentQuizStep = 0;
-let quizScore = 0;
-let isQuizAnswering = false;
+      // 7. 更新每日任務進度、存檔並刷新 UI
+      state.dailyQuests.wordAddedToday = (state.dailyQuests.wordAddedToday || 0) + picked.length;
+      saveGame();
+      renderAll();
 
-// 啟動 10 題小考
-function startVocabQuizModal() {
-  const db = (typeof TOEIC_1000_RAW !== 'undefined' && TOEIC_1000_RAW.length > 0)
-    ? TOEIC_1000_RAW
-    : (state.toeic.vocabList || []);
-
-  if (db.length < 10) {
-    alert("⚠️ 單字庫中的單字不足 10 個，請先點擊新增更多單字！");
-    return;
-  }
-
-  // 1. 隨機抽取 10 個不重複的單字作為題目
-  const shuffledDb = [...db].sort(() => Math.random() - 0.5);
-  activeQuizList = shuffledDb.slice(0, 10).map(item => {
-    // 相容外部千字庫陣列 [word, pos, meaning, ex] 與 state 裡的物件
-    if (Array.isArray(item)) {
-      return { word: item[0], pos: item[1], meaning: item[2], example: item[3] };
+      playSound('flip');
+      showToast(`🎉 成功抽取 5 個多益高頻單字入庫！`, "success");
     }
-    return { word: item.word, pos: item.pos, meaning: item.meaning, example: item.example };
-  });
+    /* =====================================================
+       📝 10 題四選一測驗邏輯
+    ===================================================== */
+    let activeQuizList = [];
+    let currentQuizStep = 0;
+    let quizScore = 0;
+    let isQuizAnswering = false;
 
-  currentQuizStep = 0;
-  quizScore = 0;
-  isQuizAnswering = false;
+    // 啟動 10 題小考
+    function startVocabQuizModal() {
+      const db = (typeof TOEIC_1000_RAW !== 'undefined' && TOEIC_1000_RAW.length > 0)
+        ? TOEIC_1000_RAW
+        : (state.toeic.vocabList || []);
 
-  document.getElementById('vocabQuizModal').classList.remove('hidden');
-  renderQuizStep();
-}
+      if (db.length < 10) {
+        showToast("⚠️ 單字庫中的單字不足 10 個，請先點擊新增更多單字！", "warning");
+        return;
+      }
+
+      // 1. 隨機抽取 10 個不重複的單字作為題目
+      const shuffledDb = [...db].sort(() => Math.random() - 0.5);
+      activeQuizList = shuffledDb.slice(0, 10).map(item => {
+        // 相容外部千字庫陣列 [word, pos, meaning, ex] 與 state 裡的物件
+        if (Array.isArray(item)) {
+          return { word: item[0], pos: item[1], meaning: item[2], example: item[3] };
+        }
+        return { word: item.word, pos: item.pos, meaning: item.meaning, example: item.example };
+      });
+
+      currentQuizStep = 0;
+      quizScore = 0;
+      isQuizAnswering = false;
+
+      document.getElementById('vocabQuizModal').classList.remove('hidden');
+      renderQuizStep();
+    }
 
 function closeVocabQuizModal() {
   document.getElementById('vocabQuizModal').classList.add('hidden');
@@ -21947,14 +22991,11 @@ function finishVocabQuiz() {
   let bonusShards = quizScore * 2; // 每對一題得 2 點碎片
 
   if (quizScore === 10) {
-checkAndResetDailyQuests();
+    checkAndResetDailyQuests();
     state.dailyQuests.quizPerfectToday = true; // 👈 標記今日拿下滿分！
     bonusTickets = 3; // 滿分送 3 張抽卡券
-    confetti({ particleCount: 150, spread: 90 });
-    playSound('ur_ssr');
   } else if (quizScore >= 7) {
     bonusTickets = 1; // 7 題以上送 1 張
-    confetti({ particleCount: 60, spread: 60 });
   }
 
   // 發放獎勵
@@ -21964,13 +23005,29 @@ checkAndResetDailyQuests();
   saveGame();
   renderAll();
 
-  alert(
-    `🏁 測驗結束！\n\n` +
-    `得分：${quizScore} / 10 題\n` +
-    `獲得獎勵：\n` +
-    `🎟️ 抽卡券 +${bonusTickets} 張\n` +
-    `💎 選秀碎片 +${bonusShards} 點`
-  );
+  const rewardsList = [];
+  if (bonusTickets > 0) {
+    rewardsList.push({ icon: '🎟️', name: '測驗抽卡券獎勵', amount: `+${bonusTickets} 張` });
+  }
+  if (bonusShards > 0) {
+    rewardsList.push({ icon: '💎', name: '選秀碎片獎勵', amount: `+${bonusShards} 點` });
+  }
+  rewardsList.push({ icon: '🎯', name: '測驗最終成績', amount: `${quizScore} / 10 題` });
+
+  if (bonusTickets > 0 || bonusShards > 0) {
+    addNotification({
+      title: `📝 10 題測驗結算（${quizScore}/10）`,
+      message: `獲得 🎟️ 抽卡券 +${bonusTickets} 張、💎 選秀碎片 +${bonusShards} 點！`,
+      icon: '📝',
+      type: 'reward'
+    });
+  }
+
+  showRewardModal({
+    title: quizScore === 10 ? '👑 滿分通關！神級表現！' : (quizScore >= 7 ? '🎉 測驗大捷！成績優秀！' : '🏁 測驗完成！持續精進！'),
+    subtitle: `10 題多益四選一測驗完成，答對 ${quizScore} 題！`,
+    rewards: rewardsList
+  });
 }
 // 即時計算正確率
 function calculateStudyRates() {
@@ -22280,7 +23337,7 @@ function submitStudyLog() {
   if (!state.studyDetails) state.studyDetails = {};
 
   if (!state.isAdmin && state.studyLogs.includes(today)) {
-    alert("⚠️ 今天已經完成過打卡囉！明天繼續加油！");
+    showToast("⚠️ 今天已經完成過打卡囉！明天繼續加油！", "warning");
     return;
   }
 
@@ -22292,11 +23349,11 @@ function submitStudyLog() {
   const rCor = parseInt(document.getElementById('inputReadCorrect')?.value) || 0;
 
   if (lCor > lTot) {
-    alert("❌ 聽力答對題數不可大於總題數！");
+    showToast("❌ 聽力答對題數不可大於總題數！", "error");
     return;
   }
   if (rCor > rTot) {
-    alert("❌ 閱讀答對題數不可大於總題數！");
+    showToast("❌ 閱讀答對題數不可大於總題數！", "error");
     return;
   }
 
@@ -22316,23 +23373,33 @@ function submitStudyLog() {
 
   if (!state.isAdmin) state.tickets += 1;
 
-  confetti({ particleCount: 90, spread: 80 });
-  playSound('ur_ssr');
-
   saveGame();
   renderAll();
 
   const lRate = lTot > 0 ? `${Math.round((lCor / lTot) * 100)}%` : '--%';
   const rRate = rTot > 0 ? `${Math.round((rCor / rTot) * 100)}%` : '--%';
 
-  alert(
-    `🎉 今日多益戰報已保存！\n\n` +
-    `📝 測驗：${quizName}\n` +
-    (totalScore > 0 ? `🏆 總分：${totalScore} 分\n` : '') +
-    `🎧 聽力：${lCor}/${lTot} (正確率 ${lRate})\n` +
-    `📖 閱讀：${rCor}/${rTot} (正確率 ${rRate})\n\n` +
-    `獲得獎勵：🎟️ 抽卡券 +1 張！`
-  );
+  addNotification({
+    title: '📝 今日多益打卡保存！',
+    message: `${quizName} 完成！聽力 ${lRate} ｜ 閱讀 ${rRate}，獲得 🎟️ 抽卡券 +1 張！`,
+    icon: '📅',
+    type: 'system'
+  });
+
+  const rewardItems = [
+    { icon: '🎟️', name: '每日打卡獎勵', amount: '+1 張抽卡券' },
+    { icon: '🎧', name: '聽力正確率', amount: `${lRate} (${lCor}/${lTot})` },
+    { icon: '📖', name: '閱讀正確率', amount: `${rRate} (${rCor}/${rTot})` }
+  ];
+  if (totalScore > 0) {
+    rewardItems.unshift({ icon: '🏆', name: '測驗模考總分', amount: `${totalScore} 分` });
+  }
+
+  showRewardModal({
+    title: '🎉 今日多益戰報已保存！',
+    subtitle: `測驗：${quizName}`,
+    rewards: rewardItems
+  });
 }
     // 初始化下拉選單 30 隊選項
     const mainTeamSelect = document.getElementById('filterTeam');
@@ -22682,7 +23749,7 @@ function renderRacksInitial() {
 // 3. 點擊「開始挑戰」按鈕 (選定球員後立即鎖定不可更換，每賽季限玩一次)
 function startThreePointRound() {
   if (state.season && state.season.threePtContestPlayed) {
-    alert("⚠️ 本賽季三分球大賽已經參加過囉！每賽季限參加一次，新賽季將再次開放！");
+    showToast("⚠️ 本賽季三分球大賽已經參加過囉！每賽季限參加一次，新賽季將再次開放！", "warning");
     return;
   }
 
@@ -22919,6 +23986,423 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
+/* =====================================================
+   💍 總冠軍戒指展示櫃 & 🎉 奪冠慶典系統 (CHAMPIONSHIP CELEBRATION & RING CABINET)
+===================================================== */
+let confettiAnimationId = null;
+
+function renderRingSVG(ring, size = 120) {
+  const uid = Math.random().toString(36).slice(2, 7);
+  const yearText = ring && ring.year ? ring.year : 2026;
+  return `
+    <svg width="${size}" height="${size}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-[0_10px_20px_rgba(245,158,11,0.45)] select-none">
+      <defs>
+        <radialGradient id="ringGoldOuter_${uid}" cx="50%" cy="45%" r="55%">
+          <stop offset="0%" stop-color="#fffbeb"/>
+          <stop offset="28%" stop-color="#fef08a"/>
+          <stop offset="60%" stop-color="#f59e0b"/>
+          <stop offset="85%" stop-color="#d97706"/>
+          <stop offset="100%" stop-color="#78350f"/>
+        </radialGradient>
+        <radialGradient id="ringGemCenter_${uid}" cx="45%" cy="38%" r="62%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="25%" stop-color="#fef9c3"/>
+          <stop offset="60%" stop-color="#fbbf24"/>
+          <stop offset="85%" stop-color="#d97706"/>
+          <stop offset="100%" stop-color="#78350f"/>
+        </radialGradient>
+        <linearGradient id="ringBandShine_${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#fef3c7"/>
+          <stop offset="40%" stop-color="#f59e0b"/>
+          <stop offset="80%" stop-color="#b45309"/>
+          <stop offset="100%" stop-color="#78350f"/>
+        </linearGradient>
+        <filter id="goldGlow_${uid}" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="3.5" result="blur"/>
+          <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+      </defs>
+
+      <!-- 底部厚實戒環 -->
+      <ellipse cx="100" cy="150" rx="58" ry="26" fill="url(#ringBandShine_${uid})" stroke="#fef3c7" stroke-width="2.5" />
+      <ellipse cx="100" cy="144" rx="44" ry="17" fill="#181512" />
+
+      <!-- 戒指主立體金屬座台 -->
+      <path d="M42 104 L64 144 Q100 156 136 144 L158 104 Z" fill="url(#ringGoldOuter_${uid})" stroke="#fde68a" stroke-width="2" />
+
+      <!-- 戒指頂部八角形尊爵冠台 -->
+      <polygon points="66,50 134,50 170,84 154,118 46,118 30,84" fill="url(#ringGoldOuter_${uid})" stroke="#ffffff" stroke-width="2.5" filter="url(#goldGlow_${uid})"/>
+
+      <!-- 密鑲碎鑽外圈 (Pavé Diamonds) -->
+      <circle cx="70" cy="56" r="3.5" fill="#ffffff" stroke="#fbbf24" stroke-width="1"/>
+      <circle cx="88" cy="52" r="3.5" fill="#ffffff" stroke="#fbbf24" stroke-width="1"/>
+      <circle cx="112" cy="52" r="3.5" fill="#ffffff" stroke="#fbbf24" stroke-width="1"/>
+      <circle cx="130" cy="56" r="3.5" fill="#ffffff" stroke="#fbbf24" stroke-width="1"/>
+      <circle cx="156" cy="78" r="3.5" fill="#ffffff" stroke="#fbbf24" stroke-width="1"/>
+      <circle cx="162" cy="94" r="3.5" fill="#ffffff" stroke="#fbbf24" stroke-width="1"/>
+      <circle cx="146" cy="112" r="3.5" fill="#ffffff" stroke="#fbbf24" stroke-width="1"/>
+      <circle cx="124" cy="115" r="3.5" fill="#ffffff" stroke="#fbbf24" stroke-width="1"/>
+      <circle cx="100" cy="116" r="3.5" fill="#ffffff" stroke="#fbbf24" stroke-width="1"/>
+      <circle cx="76" cy="115" r="3.5" fill="#ffffff" stroke="#fbbf24" stroke-width="1"/>
+      <circle cx="54" cy="112" r="3.5" fill="#ffffff" stroke="#fbbf24" stroke-width="1"/>
+      <circle cx="38" cy="94" r="3.5" fill="#ffffff" stroke="#fbbf24" stroke-width="1"/>
+      <circle cx="44" cy="78" r="3.5" fill="#ffffff" stroke="#fbbf24" stroke-width="1"/>
+
+      <!-- 中心籃球切面主鑽石 -->
+      <g class="gem-sparkle">
+        <ellipse cx="100" cy="84" rx="40" ry="25" fill="url(#ringGemCenter_${uid})" stroke="#ffffff" stroke-width="2"/>
+        <path d="M60 84 Q100 84 140 84" stroke="#ffffff" stroke-width="1.5" opacity="0.85"/>
+        <path d="M100 59 Q100 84 100 109" stroke="#ffffff" stroke-width="1.5" opacity="0.85"/>
+        <path d="M72 67 Q88 84 72 101" stroke="#ffffff" stroke-width="1.2" opacity="0.85"/>
+        <path d="M128 67 Q112 84 128 101" stroke="#ffffff" stroke-width="1.2" opacity="0.85"/>
+        <text x="100" y="90" text-anchor="middle" font-size="19" fill="#ffffff" filter="drop-shadow(0 0 5px #fbbf24)">🏆</text>
+      </g>
+
+      <!-- 戒面年份刻印銘牌 (Engraved Nameplate) -->
+      <rect x="50" y="128" width="100" height="16" rx="4" fill="#381500" stroke="#fef08a" stroke-width="1.2"/>
+      <text x="100" y="140" text-anchor="middle" font-family="monospace" font-size="9" font-weight="900" fill="#fef08a" letter-spacing="1.5">
+        ${yearText} CHAMPIONS
+      </text>
+    </svg>
+  `;
+}
+
+function playVictoryFanfare() {
+  try {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    const chords = [
+      { f: 261.63, t: 0.0, d: 0.8 }, // C4
+      { f: 329.63, t: 0.12, d: 0.8 }, // E4
+      { f: 392.00, t: 0.24, d: 0.8 }, // G4
+      { f: 523.25, t: 0.40, d: 1.4 }, // C5
+      { f: 659.25, t: 0.52, d: 1.4 }, // E5
+      { f: 783.99, t: 0.64, d: 1.8 }  // G5
+    ];
+
+    chords.forEach(c => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(c.f, now + c.t);
+      gain.gain.setValueAtTime(0.2, now + c.t);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + c.t + c.d);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + c.t);
+      osc.stop(now + c.t + c.d);
+    });
+  } catch(e) {
+    console.warn("Victory audio note skipped:", e);
+  }
+}
+
+// 🎊 彩帶與拉砲粒子動畫引擎
+function startCelebrationConfetti() {
+  const canvas = document.getElementById('celebrationConfettiCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const colors = ['#f59e0b', '#fbbf24', '#ec4899', '#3b82f6', '#10b981', '#ffffff', '#f43f5e', '#a855f7'];
+  const confettiCount = 120;
+  const confetti = [];
+
+  for (let i = 0; i < confettiCount; i++) {
+    confetti.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * -canvas.height,
+      size: Math.random() * 8 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      speedY: Math.random() * 3 + 2.5,
+      speedX: Math.random() * 2 - 1,
+      rotation: Math.random() * 360,
+      rotSpeed: Math.random() * 6 - 3,
+      isRibbon: Math.random() > 0.6
+    });
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    confetti.forEach(p => {
+      p.y += p.speedY;
+      p.x += p.speedX;
+      p.rotation += p.rotSpeed;
+
+      if (p.y > canvas.height) {
+        p.y = -20;
+        p.x = Math.random() * canvas.width;
+      }
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rotation * Math.PI) / 180);
+      ctx.fillStyle = p.color;
+
+      if (p.isRibbon) {
+        ctx.fillRect(-p.size, -p.size * 2, p.size / 2, p.size * 2.5);
+      } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    });
+
+    confettiAnimationId = requestAnimationFrame(render);
+  }
+
+  if (confettiAnimationId) cancelAnimationFrame(confettiAnimationId);
+  render();
+}
+
+function stopCelebrationConfetti() {
+  if (confettiAnimationId) {
+    cancelAnimationFrame(confettiAnimationId);
+    confettiAnimationId = null;
+  }
+  const canvas = document.getElementById('celebrationConfettiCanvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
+// 🎉 觸發奪冠香檳遊行慶典
+function showChampionshipCelebration(data) {
+  const modal = document.getElementById('championshipCelebrationModal');
+  if (!modal) return;
+
+  const ring = data.ring || {};
+  const fmvpCard = data.fmvpCard;
+  const fmvpStats = data.fmvpStats || '總決賽統治級身手';
+  const record = data.record || '16-3';
+  const opponent = data.opponent || '對手戰隊';
+  const year = data.year || 2026;
+
+  // 播放勝利號角聲
+  playVictoryFanfare();
+
+  // 報紙頭條與年份
+  const npYear = document.getElementById('celebNewspaperYear');
+  if (npYear) npYear.innerText = `${year} NBA CHAMPIONS`;
+  const npRecord = document.getElementById('celebNewspaperRecord');
+  if (npRecord) npRecord.innerText = `季後賽戰績 ${record} 登頂世界之巔！`;
+  const npOpp = document.getElementById('celebNewspaperOpponent');
+  if (npOpp) npOpp.innerText = `總決賽橫掃擊潰【${opponent}】`;
+
+  // 3D 戒指插槽
+  const ringBox = document.getElementById('celebRingPlaceholder');
+  if (ringBox) {
+    ringBox.innerHTML = renderRingSVG(ring, 140);
+  }
+
+  // 3D 戒指名牌
+  const ringYearEl = document.getElementById('celebRingYearText');
+  if (ringYearEl) ringYearEl.innerText = `${year} CHAMPIONS`;
+  const ringRecordEl = document.getElementById('celebRingRecordText');
+  if (ringRecordEl) ringRecordEl.innerText = `季後賽總戰績: ${record}`;
+  const ringOppEl = document.getElementById('celebRingOpponentText');
+  if (ringOppEl) ringOppEl.innerText = `總決賽擊敗: ${opponent}`;
+
+  // FMVP 燙金卡面與頭銜
+  const fmvpNameEl = document.getElementById('celebFmvpName');
+  const fmvpStatsEl = document.getElementById('celebFmvpStats');
+  const fmvpOvrEl = document.getElementById('celebFmvpOvr');
+  const fmvpImgEl = document.getElementById('celebFmvpAvatar');
+  const fmvpTeamEl = document.getElementById('celebFmvpTeam');
+
+  if (fmvpCard) {
+    if (fmvpNameEl) fmvpNameEl.innerText = fmvpCard.name;
+    if (fmvpStatsEl) fmvpStatsEl.innerText = fmvpStats;
+    if (fmvpOvrEl) fmvpOvrEl.innerText = `OVR ${fmvpCard.ovr} (下季永久 +1)`;
+    if (fmvpTeamEl) fmvpTeamEl.innerText = `${fmvpCard.team || 'NBA'} · ${fmvpCard.positions ? fmvpCard.positions.join('/') : 'G'}`;
+    if (fmvpImgEl) {
+      if (fmvpCard.nbaId) {
+        fmvpImgEl.src = `https://cdn.nba.com/headshots/nba/latest/1040x760/${fmvpCard.nbaId}.png`;
+        fmvpImgEl.onerror = () => { fmvpImgEl.src = 'https://cdn.nba.com/logos/leagues/logo-nba.svg'; };
+      } else {
+        fmvpImgEl.src = 'https://cdn.nba.com/logos/leagues/logo-nba.svg';
+      }
+    }
+  } else {
+    if (fmvpNameEl) fmvpNameEl.innerText = ring.fmvpName || '全能核心主力';
+    if (fmvpStatsEl) fmvpStatsEl.innerText = ring.fmvpStats || '場均 28.5分 7.5板 8.0助';
+    if (fmvpOvrEl) fmvpOvrEl.innerText = '下季能力值永久 +1';
+    if (fmvpTeamEl) fmvpTeamEl.innerText = '冠軍陣容主力核心';
+    if (fmvpImgEl) fmvpImgEl.src = 'https://cdn.nba.com/logos/leagues/logo-nba.svg';
+  }
+
+  modal.classList.remove('hidden');
+  startCelebrationConfetti();
+  lucide.createIcons();
+}
+
+function closeChampionshipCelebration() {
+  const modal = document.getElementById('championshipCelebrationModal');
+  if (modal) modal.classList.add('hidden');
+  stopCelebrationConfetti();
+}
+
+function claimCelebrationAndShowRewards() {
+  closeChampionshipCelebration();
+  showRewardModal({
+    title: '🏆 登頂世界之巔！榮登 NBA 總冠軍！',
+    subtitle: '全體出戰球員獲授總冠軍戒指 💍，FMVP 榮膺燙金徽章！',
+    rewards: [
+      { icon: '🎟️', name: '奪冠獎勵抽卡券', amount: '+15 張' },
+      { icon: '💎', name: '選秀碎片', amount: '+100 點' },
+      { icon: '💍', name: '全隊總冠軍戒指', amount: '已入櫃' },
+      { icon: '🏆', name: 'FMVP 傳奇印記', amount: '永久 OVR+1' }
+    ],
+    note: '總冠軍戒指已收錄至頂部【💍 戒指櫃】，可隨時檢視 3D 戒指與歷屆功勳！'
+  });
+}
+
+function goToRingsCabinetFromCelebration() {
+  closeChampionshipCelebration();
+  openChampionshipRingsModal();
+}
+
+// 💍 總冠軍戒指展示櫃 Modal 控制
+function openChampionshipRingsModal() {
+  renderChampionshipRingsModal();
+  const modal = document.getElementById('championshipRingsModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    lucide.createIcons();
+  }
+}
+
+function closeChampionshipRingsModal() {
+  const modal = document.getElementById('championshipRingsModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function renderChampionshipRingsModal() {
+  const rings = Array.isArray(state.championshipRings) ? state.championshipRings : [];
+  const countBadge = document.getElementById('ringsCabinetTotalCount');
+  if (countBadge) countBadge.innerText = `${rings.length} 枚`;
+
+  const grid = document.getElementById('ringsCabinetGrid');
+  if (!grid) return;
+
+  if (rings.length === 0) {
+    grid.innerHTML = `
+      <div class="col-span-full py-12 flex flex-col items-center justify-center text-center p-6 bg-slate-950/60 rounded-3xl border border-dashed border-slate-800">
+        <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-3xl mb-3">
+          💍
+        </div>
+        <h4 class="text-base font-black text-amber-400">冠軍收藏櫃尚無戒指</h4>
+        <p class="text-xs text-slate-400 max-w-sm mt-1.5 leading-relaxed">
+          在例行賽 82 場斬獲 40 勝挺進 16 強季後賽，過關斬將奪下總決賽第 4 勝，即可將刻有【年份、季後賽戰績、決賽對手】的閃耀 3D 冠軍戒指永久珍藏於此！
+        </p>
+        <button onclick="closeChampionshipRingsModal(); switchTab('tab-season');" class="mt-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs px-4 py-2 rounded-xl transition cursor-pointer shadow-lg active:scale-95">
+          前往賽季爭奪冠軍 ➔
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = rings.map((ring, idx) => {
+    return `
+      <div onclick="inspectRingDetails('${ring.id}')" class="group relative bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 border border-amber-500/40 hover:border-amber-400 rounded-3xl p-5 shadow-xl transition-all duration-300 hover:shadow-amber-500/15 hover:-translate-y-1.5 cursor-pointer overflow-hidden flex flex-col items-center text-center">
+        <!-- 頂部高光氛圍光暈 -->
+        <div class="absolute -top-12 -right-12 w-32 h-32 bg-amber-500/15 rounded-full blur-2xl group-hover:bg-amber-500/30 transition-all pointer-events-none"></div>
+
+        <!-- 標籤：奪冠賽季年份 -->
+        <div class="w-full flex justify-between items-center text-[10px] font-mono text-slate-400 mb-1">
+          <span class="text-amber-400 font-black flex items-center gap-1">
+            <span>💍</span> #${rings.length - idx}
+          </span>
+          <span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full font-bold">
+            ${ring.year} CHAMPION
+          </span>
+        </div>
+
+        <!-- 3D 浮動戒指展示台 -->
+        <div class="relative w-36 h-36 flex items-center justify-center my-2">
+          <!-- 大理石/天鵝絨圓形展台 -->
+          <div class="absolute bottom-2 w-28 h-6 bg-slate-950 rounded-full border border-amber-500/30 shadow-[0_4px_16px_rgba(0,0,0,0.8)] flex items-center justify-center">
+            <div class="w-20 h-3 bg-amber-950/50 rounded-full blur-xs"></div>
+          </div>
+
+          <!-- 3D 戒指實體 -->
+          <div class="relative ring-3d-floating pointer-events-none">
+            ${renderRingSVG(ring, 115)}
+          </div>
+        </div>
+
+        <!-- 銘刻展示銘牌 -->
+        <div class="w-full bg-slate-950/80 border border-amber-500/30 rounded-2xl p-3 space-y-1.5 mt-1 text-left">
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-amber-400 font-black tracking-wide">${ring.year} 冠軍戒</span>
+            <span class="bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] px-1.5 py-0.2 rounded font-bold font-mono">
+              ${ring.record || '16-3'}
+            </span>
+          </div>
+
+          <div class="text-[11px] text-slate-300 flex items-center gap-1.5 truncate">
+            <span class="text-slate-500 text-[10px]">對手:</span>
+            <span class="font-bold text-slate-200 truncate">${ring.opponent || '對手戰隊'}</span>
+          </div>
+
+          <div class="pt-1.5 border-t border-slate-800 flex items-center justify-between text-[11px]">
+            <div class="flex items-center gap-1 text-amber-300 font-bold truncate">
+              <span class="text-xs">🏆</span>
+              <span class="truncate">FMVP: ${ring.fmvpName || '核心主力'}</span>
+            </div>
+            <span class="text-[10px] text-amber-400 font-bold group-hover:translate-x-0.5 transition-transform">
+              詳細 ➔
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 🔍 點擊戒指深入全景檢視
+function inspectRingDetails(ringId) {
+  const rings = Array.isArray(state.championshipRings) ? state.championshipRings : [];
+  const ring = rings.find(r => r.id === ringId) || rings[0];
+  if (!ring) return;
+
+  const modal = document.getElementById('ringDetailModal');
+  if (!modal) return;
+
+  // 渲染大尺寸 3D 戒指
+  const largeBox = document.getElementById('detailRing3DBox');
+  if (largeBox) largeBox.innerHTML = renderRingSVG(ring, 170);
+
+  const yearEl = document.getElementById('detailRingYear');
+  if (yearEl) yearEl.innerText = `${ring.year} NBA 總冠軍戒指`;
+
+  const recordEl = document.getElementById('detailRingRecord');
+  if (recordEl) recordEl.innerText = ring.record || '16-3';
+
+  const oppEl = document.getElementById('detailRingOpponent');
+  if (oppEl) oppEl.innerText = ring.opponent || '對手戰隊';
+
+  const fmvpEl = document.getElementById('detailRingFmvp');
+  if (fmvpEl) fmvpEl.innerText = ring.fmvpName || '全能核心主力';
+
+  const fmvpStatsEl = document.getElementById('detailRingFmvpStats');
+  if (fmvpStatsEl) fmvpStatsEl.innerText = ring.fmvpStats || '總決賽火燙統治級表現';
+
+  modal.classList.remove('hidden');
+  lucide.createIcons();
+}
+
+function closeRingDetailModal() {
+  const modal = document.getElementById('ringDetailModal');
+  if (modal) modal.classList.add('hidden');
+}
+
  </script>
 <!-- 🏀 季後賽逐場動態播報彈窗 -->
 <div id="playoffSeriesModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
@@ -22945,8 +24429,19 @@ window.addEventListener('keydown', (e) => {
 </div>
     <!-- 📊 擬真 NBA Box Score 戰報彈窗 -->
     <div id="gameBoxScoreModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-2xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-2xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto animate-modal-in">
         
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">📊</span>
+            <div>
+              <h3 class="text-sm font-black text-white">NBA 比賽完整戰報 (Box Score)</h3>
+              <span class="text-[10px] text-slate-400 font-mono">OFFICIAL GAME STATS</span>
+            </div>
+          </div>
+          <button onclick="closeGameBoxScoreModal()" type="button" class="text-slate-400 hover:text-white p-1 text-sm font-bold cursor-pointer">✕</button>
+        </div>
+
         <div class="flex justify-between items-center bg-slate-950 p-4 rounded-2xl border border-slate-800">
           <div class="text-center flex-1">
             <span class="text-xs text-amber-400 font-bold block">YOUR TEAM</span>
@@ -23020,39 +24515,60 @@ window.addEventListener('keydown', (e) => {
           </table>
         </div>
         <div class="flex justify-end pt-2">
-<button onclick="document.getElementById('gameBoxScoreModal').style.display='none'; document.getElementById('gameBoxScoreModal').classList.add('hidden')" type="button" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs cursor-pointer transition">
-  確定收下戰報
-</button>
+          <button onclick="closeGameBoxScoreModal()" type="button" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 text-slate-950 font-black px-6 py-2.5 rounded-xl text-xs cursor-pointer transition shadow-lg">
+            確定收下戰報
+          </button>
         </div>
       </div>
     </div>
 <!-- 🔍 球員真實數據詳情彈窗 -->
 <div id="playerDetailModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-  <div class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-lg p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-lg p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto animate-modal-in">
     <!-- 頂部卡片資訊 -->
-    <div class="flex justify-between items-start border-b border-slate-800 pb-3">
-      <div class="flex items-center gap-3">
-        <div class="w-12 h-12 rounded-full overflow-hidden bg-slate-950 border border-amber-400/50 flex-shrink-0">
-          <img id="detailPlayerImg" src="" class="w-full h-full object-cover object-top">
+    <div class="flex justify-between items-start border-b border-slate-800 pb-3 gap-3">
+      <div class="space-y-1.5 flex-1 min-w-0">
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span id="detailPlayerTeam" class="text-[10px] font-mono font-bold bg-slate-800 px-2 py-0.5 rounded text-slate-300">--</span>
+          <span id="detailPlayerPos" class="text-[10px] font-mono font-bold text-indigo-300 bg-indigo-950/60 border border-indigo-500/30 px-2 py-0.5 rounded">--</span>
+          <span id="detailPlayerRarity" class="text-[10px] font-mono font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">--</span>
+          <span id="detailPlayerStars" class="text-xs font-black text-amber-400 tracking-wider">★</span>
         </div>
-        <div>
-          <div class="flex items-center gap-1.5">
-            <span id="detailPlayerTeam" class="text-[10px] font-mono font-bold bg-slate-800 px-1.5 py-0.5 rounded text-slate-300">--</span>
-            <span id="detailPlayerPos" class="text-[10px] font-mono font-bold text-indigo-300">--</span>
-            <span id="detailPlayerRarity" class="text-[10px] font-mono font-black text-amber-400">--</span>
-          </div>
-          <h3 id="detailPlayerName" class="text-base font-black text-white">球員姓名</h3>
-          <div class="text-xs font-mono text-amber-400 font-bold">
-            卡片 OVR: <span id="detailPlayerOvr">0</span> ｜ 實力評級: <span id="detailPlayerRealOvr">0</span>
-          </div>
+        <h3 id="detailPlayerName" class="text-lg sm:text-xl font-black text-white tracking-tight truncate">球員姓名</h3>
+        <div class="text-xs font-mono text-amber-400 font-bold flex flex-wrap items-center gap-x-2 gap-y-0.5">
+          <span>卡片 OVR: <span id="detailPlayerOvr" class="text-amber-300 font-black">0</span></span>
+          <span class="text-slate-600">|</span>
+          <span class="text-slate-300">實力評級: <span id="detailPlayerRealOvr" class="text-emerald-400 font-black">0</span></span>
         </div>
       </div>
       
-      <div class="flex items-center gap-1.5">
-        <button onclick="openBadgeGuideModal()" type="button" class="bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 border border-indigo-500/40 text-[10px] font-bold px-2 py-1 rounded-xl transition cursor-pointer" title="查閱所有徽章用處">
+      <div class="flex items-center gap-1.5 flex-shrink-0">
+        <button onclick="openBadgeGuideModal()" type="button" class="bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 border border-indigo-500/40 text-[10px] font-bold px-2.5 py-1.5 rounded-xl transition cursor-pointer" title="查閱所有徽章用處">
           ❓ 徽章指南
         </button>
-        <button onclick="closePlayerDetailModal()" class="text-slate-400 hover:text-white p-1 text-sm font-bold cursor-pointer">✕</button>
+        <button onclick="closePlayerDetailModal()" class="text-slate-400 hover:text-white p-1 text-base font-bold cursor-pointer transition">✕</button>
+      </div>
+    </div>
+
+    <!-- 🏆 生涯成就與歷史紀錄 (Card Detail & Legacy) -->
+    <div id="detailPlayerLegacy" class="hidden bg-slate-950 p-2.5 rounded-2xl border border-amber-500/30 text-xs flex items-center justify-around font-mono text-center">
+      <div>
+        <span class="text-[9px] text-slate-400 block font-bold">總冠軍</span>
+        <span id="legacyRings" class="text-amber-400 font-black text-sm">💍 0</span>
+      </div>
+      <div class="h-6 w-px bg-slate-800"></div>
+      <div>
+        <span class="text-[9px] text-slate-400 block font-bold">生涯得分</span>
+        <span id="legacyPts" class="text-slate-200 font-bold text-xs">0 分</span>
+      </div>
+      <div class="h-6 w-px bg-slate-800"></div>
+      <div>
+        <span class="text-[9px] text-slate-400 block font-bold">出戰場次</span>
+        <span id="legacyGames" class="text-slate-200 font-bold text-xs">0 場</span>
+      </div>
+      <div class="h-6 w-px bg-slate-800"></div>
+      <div>
+        <span class="text-[9px] text-slate-400 block font-bold">歷經賽季</span>
+        <span id="legacySeasons" class="text-slate-200 font-bold text-xs">0 季</span>
       </div>
     </div>
 
@@ -23232,6 +24748,307 @@ window.addEventListener('keydown', (e) => {
       </button>
     </div>
 
+  </div>
+</div>
+
+<!-- =====================================================
+     🌟 統一 GAME MODAL, CONFIRM, REWARD, TOAST & OVERLAY
+===================================================== -->
+
+<!-- 🍞 統一 Toast 輕量提示容器 (P2: 支援 success, warning, error, info) -->
+<div id="toastContainer" class="fixed top-14 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2 pointer-events-none w-full max-w-sm px-4"></div>
+
+<!-- 🔔 統一系統彈窗 (P0: 替代原生 alert, 標準化樣式) -->
+<div id="unifiedGameModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[90] hidden flex items-center justify-center p-4">
+  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-modal-in relative text-center">
+    <div id="gameModalIconWrapper" class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-3xl">
+      <span id="gameModalIcon">ℹ️</span>
+    </div>
+    <div>
+      <h3 id="gameModalTitle" class="text-lg font-black text-white">系統通知</h3>
+      <p id="gameModalMessage" class="text-sm text-slate-300 mt-2 leading-relaxed whitespace-pre-line"></p>
+    </div>
+    <div id="gameModalCustomContent" class="text-left hidden"></div>
+    <div class="pt-2">
+      <button id="gameModalConfirmBtn" onclick="closeGameModal()" type="button" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black py-2.5 rounded-xl text-sm transition cursor-pointer active:scale-98 shadow-lg">
+        確定
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ❓ 統一確認彈窗 (P1: 取代原生 confirm, Promise/Callback 雙向相容) -->
+<div id="unifiedConfirmModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[92] hidden flex items-center justify-center p-4">
+  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-modal-in relative text-center">
+    <div id="confirmModalIconWrapper" class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-3xl">
+      <span id="confirmModalIcon">⚠️</span>
+    </div>
+    <div>
+      <h3 id="confirmModalTitle" class="text-lg font-black text-white">請確認操作</h3>
+      <p id="confirmModalMessage" class="text-sm text-slate-300 mt-2 leading-relaxed whitespace-pre-line"></p>
+    </div>
+    <div class="flex gap-3 pt-2">
+      <button id="confirmModalCancelBtn" type="button" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">
+        取消
+      </button>
+      <button id="confirmModalOkBtn" type="button" class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition cursor-pointer">
+        確定執行
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 🎁 統一高規格獎勵結算彈窗 (P1: Reward Window 簽到/升星/奪冠/任務全解) -->
+<div id="unifiedRewardModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[95] hidden flex items-center justify-center p-4">
+  <div class="relative bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/60 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-modal-in text-center overflow-hidden">
+    <!-- 光暈背景 -->
+    <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-amber-500/20 rounded-full blur-3xl pointer-events-none reward-glow-pulse"></div>
+    
+    <div class="relative z-10">
+      <div class="text-5xl mb-2" id="rewardModalTrophyIcon">🏆</div>
+      <h3 id="rewardModalTitle" class="text-xl font-black text-amber-400">獲得獎勵！</h3>
+      <p id="rewardModalSubtitle" class="text-xs text-slate-300 mt-1 whitespace-pre-line leading-relaxed"></p>
+    </div>
+
+    <!-- 獎勵物品清單 -->
+    <div id="rewardModalList" class="relative z-10 grid grid-cols-2 gap-2.5 py-2">
+      <!-- 動態插入獎勵卡片 -->
+    </div>
+
+    <!-- 額外特質/備註 -->
+    <div id="rewardModalNoteBox" class="relative z-10 hidden p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-amber-200"></div>
+
+    <div class="relative z-10 pt-2">
+      <button id="rewardModalClaimBtn" onclick="closeRewardModal()" type="button" class="w-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:brightness-110 text-slate-950 font-black py-3 rounded-xl text-sm transition cursor-pointer active:scale-98 shadow-xl">
+        領取獎勵 (Claim)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ⏳ 統一載入與運算遮罩 (P2: Loading / Processing Indicator) -->
+<div id="loadingOverlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[110] hidden flex flex-col items-center justify-center gap-3 select-none">
+  <div class="relative w-14 h-14 flex items-center justify-center">
+    <div class="absolute inset-0 rounded-full border-2 border-amber-500/20 border-t-amber-400 animate-spin"></div>
+    <span class="text-2xl animate-bounce">🏀</span>
+  </div>
+  <p id="loadingOverlayText" class="text-sm font-bold text-amber-300 font-mono tracking-wide">運算模擬中...</p>
+</div>
+
+<!-- 📬 通知中心抽屜 (P2: Notification Center) -->
+<div id="notificationDrawer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[85] hidden flex justify-end">
+  <div class="bg-slate-900 border-l border-slate-800 w-full max-w-sm h-full flex flex-col shadow-2xl animate-modal-in">
+    <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/60">
+      <div class="flex items-center gap-2">
+        <i data-lucide="bell" class="w-4 h-4 text-amber-400"></i>
+        <h3 class="font-black text-sm text-white">通知與動態中心</h3>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="clearAllNotifications()" type="button" class="text-[10px] text-slate-400 hover:text-slate-200 cursor-pointer">清空</button>
+        <button onclick="toggleNotificationDrawer(false)" type="button" class="text-slate-400 hover:text-white p-1 text-sm font-bold cursor-pointer">✕</button>
+      </div>
+    </div>
+    <div id="notificationList" class="flex-1 overflow-y-auto p-3 space-y-2 text-xs">
+      <!-- 動態載入通知清單 -->
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================
+     🎉 奪冠香檳遊行慶典彈窗 (CHAMPIONSHIP CELEBRATION MODAL)
+===================================================== -->
+<div id="championshipCelebrationModal" class="fixed inset-0 bg-slate-950/92 backdrop-blur-lg z-[105] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+  <!-- 🎊 慶典滿版彩帶拉砲畫布 -->
+  <canvas id="celebrationConfettiCanvas" class="fixed inset-0 pointer-events-none z-10 w-full h-full"></canvas>
+
+  <div class="relative z-20 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/80 rounded-3xl w-full max-w-xl p-5 sm:p-6 shadow-[0_0_50px_rgba(245,158,11,0.35)] space-y-4 text-center overflow-hidden newspaper-unfold">
+    
+    <!-- 背景奪冠金光光環 -->
+    <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-80 h-80 bg-amber-500/25 rounded-full blur-3xl pointer-events-none reward-glow-pulse"></div>
+
+    <!-- 📰 奪冠報紙頭條版塊 (THE HOOPS DAILY EXTRA) -->
+    <div class="relative border-b-2 border-amber-500/40 pb-3">
+      <div class="flex items-center justify-between text-[10px] font-mono font-black text-amber-400/90 border-b border-slate-800 pb-1 uppercase tracking-widest">
+        <span>THE HOOPS DAILY · SPECIAL EDITION</span>
+        <span>FINAL 4TH VICTORY</span>
+      </div>
+      <div class="mt-2.5">
+        <span class="inline-block bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-black text-[11px] px-2.5 py-0.5 rounded-full shadow mb-1">
+          👑 WORLD CHAMPIONS
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow">
+          玩家夢幻隊 勇奪 <span id="celebNewspaperYear" class="text-amber-400 font-mono">2026 NBA CHAMPIONS</span>！
+        </h2>
+        <p class="text-xs text-amber-200/90 mt-1 font-mono">
+          <span id="celebNewspaperRecord" class="font-bold">季後賽戰績 16-3 登頂世界之巔！</span>
+          <span class="mx-1 text-slate-500">|</span>
+          <span id="celebNewspaperOpponent" class="text-slate-300">總決賽力克對手</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- 💍 頒獎台核心展區：3D 冠軍戒指 + 🏆 FMVP 傳奇卡面燙金印記 -->
+    <div class="relative grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+      
+      <!-- 左欄：3D 總冠軍戒指展台 -->
+      <div class="bg-slate-950/85 border border-amber-500/40 rounded-2xl p-3.5 flex flex-col items-center justify-between shadow-inner">
+        <div class="flex items-center gap-1.5 text-[11px] font-bold text-amber-300">
+          <span>💍</span>
+          <span>3D 冠軍戒指 (CHAMPIONSHIP RING)</span>
+        </div>
+
+        <div class="my-1 py-1 flex items-center justify-center">
+          <div id="celebRingPlaceholder" class="ring-3d-floating">
+            <!-- 動態插入 SVG -->
+          </div>
+        </div>
+
+        <div class="w-full bg-slate-900/90 border border-slate-800 rounded-xl p-2 text-center space-y-0.5 font-mono">
+          <div id="celebRingYearText" class="font-black text-amber-400 text-xs tracking-wider">2026 CHAMPIONS</div>
+          <div id="celebRingRecordText" class="text-[10px] text-slate-300 font-bold">季後賽總戰績: 16-3</div>
+          <div id="celebRingOpponentText" class="text-[10px] text-slate-400 truncate">總決賽擊敗: 對手</div>
+        </div>
+      </div>
+
+      <!-- 右欄：🏆 FMVP 傳奇卡面燙金印記 -->
+      <div class="bg-slate-950/85 border border-amber-500/40 rounded-2xl p-3.5 flex flex-col items-center justify-between shadow-inner relative overflow-hidden">
+        
+        <!-- 頂部 FMVP 榮譽標籤 -->
+        <div class="w-full flex items-center justify-between">
+          <span class="fmvp-gold-badge text-slate-950 font-black text-[10px] px-2 py-0.5 rounded-full shadow flex items-center gap-1 border border-amber-200">
+            <span>🏆</span> FMVP 殊榮
+          </span>
+          <span class="text-[10px] text-amber-400 font-bold font-mono">系列賽表現最火燙</span>
+        </div>
+
+        <!-- FMVP 球員半身像與燙金印記 -->
+        <div class="relative my-2 flex flex-col items-center">
+          <div class="relative w-20 h-20 rounded-full border-2 border-amber-400 p-1 bg-gradient-to-b from-amber-500/20 to-slate-900 shadow-lg flex items-center justify-center overflow-hidden">
+            <img id="celebFmvpAvatar" src="https://cdn.nba.com/logos/leagues/logo-nba.svg" alt="FMVP" class="w-full h-full object-cover rounded-full" />
+          </div>
+          <!-- 卡面永久烙印金色徽章 -->
+          <span class="absolute -bottom-1 -right-1 fmvp-gold-badge text-slate-950 font-black text-[9px] px-1.5 py-0.5 rounded-full border border-amber-200 shadow-md">
+            🏆 FMVP
+          </span>
+        </div>
+
+        <!-- FMVP 球員資訊 -->
+        <div class="w-full space-y-1 text-center">
+          <div id="celebFmvpName" class="font-black text-white text-sm truncate">球員姓名</div>
+          <div id="celebFmvpTeam" class="text-[10px] text-slate-400">冠軍陣容核心主力</div>
+          <div id="celebFmvpStats" class="text-[11px] font-bold text-amber-300 font-mono">場均 28.5分 7.5板 8.0助</div>
+          
+          <!-- 下個賽季 OVR +1 永久加成標籤 -->
+          <div class="mt-1.5 p-1.5 rounded-lg bg-amber-500/20 border border-amber-400/50 text-amber-300 text-[10px] font-black flex items-center justify-center gap-1">
+            <span>🔥</span>
+            <span id="celebFmvpOvr">下賽季能力永久加成：OVR +1</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- 底部操作按鈕組 -->
+    <div class="relative pt-2 flex flex-col sm:flex-row gap-2.5">
+      <button onclick="goToRingsCabinetFromCelebration()" type="button" class="flex-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40 font-bold py-3 rounded-xl text-xs transition cursor-pointer active:scale-98 flex items-center justify-center gap-1.5">
+        <span>💍</span> 前往總冠軍戒指展示櫃
+      </button>
+      <button onclick="claimCelebrationAndShowRewards()" type="button" class="flex-1 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:brightness-110 text-slate-950 font-black py-3 rounded-xl text-sm transition cursor-pointer active:scale-98 shadow-xl flex items-center justify-center gap-1.5">
+        <span>🎁</span> 領取奪冠榮耀獎勵 (Claim)
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- =====================================================
+     💍 總冠軍戒指展示櫃彈窗 (CHAMPIONSHIP RINGS CABINET)
+===================================================== -->
+<div id="championshipRingsModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[100] hidden flex items-center justify-center p-3 sm:p-4">
+  <div class="bg-slate-900 border border-amber-500/50 rounded-3xl w-full max-w-4xl p-5 sm:p-6 shadow-2xl space-y-4 relative animate-modal-in flex flex-col max-h-[92vh]">
+    
+    <!-- 頂部標題與計數 -->
+    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shadow">
+          💍
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="font-black text-base sm:text-lg text-white">總冠軍戒指展示櫃</h3>
+            <span id="ringsCabinetTotalCount" class="bg-amber-500 text-slate-950 font-black px-2.5 py-0.5 rounded-full text-xs font-mono">0 枚</span>
+          </div>
+          <p class="text-[11px] text-slate-400">每次奪冠刻印：奪冠賽季年份、季後賽總戰績、總決賽對手與 FMVP 殊榮</p>
+        </div>
+      </div>
+      <button onclick="closeChampionshipRingsModal()" class="text-slate-400 hover:text-white p-1 text-sm font-bold cursor-pointer">✕</button>
+    </div>
+
+    <!-- 戒指展示櫃陳列網格 (支援水平滾動/響應式網格) -->
+    <div class="flex-1 overflow-y-auto pr-1">
+      <div id="ringsCabinetGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+        <!-- 動態渲染每顆 3D 冠軍戒指 -->
+      </div>
+    </div>
+
+    <!-- 底部說明列 -->
+    <div class="pt-2 border-t border-slate-800 flex justify-between items-center text-[11px] text-slate-400">
+      <span>💡 點擊任一戒指可全景檢視 3D 造型與冠軍戰績細節</span>
+      <button onclick="closeChampionshipRingsModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-1.5 rounded-xl cursor-pointer text-xs">
+        返回遊戲
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- =====================================================
+     🔍 冠軍戒指全景詳細檢視彈窗 (RING DETAIL INSPECT MODAL)
+===================================================== -->
+<div id="ringDetailModal" class="fixed inset-0 bg-slate-950/92 backdrop-blur-md z-[108] hidden flex items-center justify-center p-4">
+  <div class="bg-slate-900 border border-amber-500/60 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 text-center relative animate-modal-in">
+    
+    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+      <h3 id="detailRingYear" class="font-black text-base text-amber-400 font-mono">2026 NBA 總冠軍戒指</h3>
+      <button onclick="closeRingDetailModal()" class="text-slate-400 hover:text-white text-sm font-bold cursor-pointer">✕</button>
+    </div>
+
+    <!-- 3D 戒指放大展示 -->
+    <div class="py-2 flex items-center justify-center">
+      <div id="detailRing3DBox" class="ring-3d-floating drop-shadow-[0_15px_30px_rgba(245,158,11,0.5)]">
+        <!-- 大尺寸 SVG 戒指 -->
+      </div>
+    </div>
+
+    <!-- 刻印戰功名牌 -->
+    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 text-left space-y-2.5 text-xs font-mono">
+      <div class="flex justify-between items-center pb-2 border-b border-slate-800/80">
+        <span class="text-slate-400">季後賽總戰績</span>
+        <span id="detailRingRecord" class="text-emerald-400 font-black text-sm">16-3</span>
+      </div>
+
+      <div class="flex justify-between items-center pb-2 border-b border-slate-800/80">
+        <span class="text-slate-400">總決賽擊潰對手</span>
+        <span id="detailRingOpponent" class="text-slate-200 font-bold">波士頓塞爾提克</span>
+      </div>
+
+      <div class="space-y-1 pt-1">
+        <div class="flex items-center justify-between">
+          <span class="text-amber-400 font-bold flex items-center gap-1">
+            <span>🏆</span> 系列賽 FMVP
+          </span>
+          <span id="detailRingFmvp" class="text-white font-black">球員姓名</span>
+        </div>
+        <div id="detailRingFmvpStats" class="text-[11px] text-amber-300/90 pl-5">
+          場均 28.5分 7.5板 8.0助 (下季能力永久 +1)
+        </div>
+      </div>
+    </div>
+
+    <button onclick="closeRingDetailModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">
+      關閉檢視 (Close)
+    </button>
   </div>
 </div>
 
