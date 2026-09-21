@@ -192,24 +192,27 @@ button, select, input, .cursor-pointer {
           <span><span id="scoutPointsCount" class="text-pink-400 font-mono font-bold">0</span>點</span>
         </div>
 
-        <!-- ⋯ 整合下拉功能選單 -->
-        <div class="relative inline-block text-left">
-          <button onclick="toggleTopMenu(event)" type="button" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 px-3 py-1 rounded-full transition text-xs font-bold cursor-pointer">
+ <!-- 🛠️ 整合功能按鈕 (修正版：支援全螢幕透明防護遮罩) -->
+        <div class="relative inline-block text-left flex-shrink-0">
+          <button onclick="openTopMenu()" type="button" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-300 border border-slate-700 px-2.5 py-1 rounded-full transition text-[11px] font-bold cursor-pointer">
             <span>🛠️ 功能</span>
-            <span class="text-[9px] font-mono text-slate-400">▼</span>
+            <span class="text-[8px] font-mono text-slate-400">▼</span>
           </button>
 
-          <!-- 點開後浮出的選單 -->
-          <div id="topDropdownMenu" class="hidden absolute right-0 mt-2 w-44 bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl p-1.5 z-50 animate-modal-in space-y-1">
-            <button onclick="openUpgradeModal(); toggleTopMenu(false);" type="button" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-indigo-300 hover:bg-indigo-950/60 transition cursor-pointer">
+          <!-- 手機防穿透透明遮罩 (點擊選單以外的地方自動關閉) -->
+          <div id="topMenuBackdrop" onclick="closeTopMenu()" class="hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]"></div>
+
+          <!-- 展開的選單本體 (拉高 z-50 確保在最上層) -->
+          <div id="topDropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] p-2 z-50 space-y-1">
+            <button onclick="closeTopMenu(); openUpgradeModal();" type="button" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-indigo-300 hover:bg-indigo-950/60 active:bg-indigo-900 transition cursor-pointer">
               <span class="flex items-center gap-2"><i data-lucide="star" class="w-4 h-4"></i> 升星所</span>
               <span class="text-[10px] text-slate-500 font-mono">突破</span>
             </button>
-            <button onclick="openMarketModal(); toggleTopMenu(false);" type="button" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-pink-300 hover:bg-pink-950/60 transition cursor-pointer">
+            <button onclick="closeTopMenu(); openMarketModal();" type="button" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-pink-300 hover:bg-pink-950/60 active:bg-pink-900 transition cursor-pointer">
               <span class="flex items-center gap-2"><i data-lucide="shopping-bag" class="w-4 h-4"></i> 交易所</span>
               <span class="text-[10px] text-slate-500 font-mono">碎片</span>
             </button>
-            <button onclick="openChampionshipRingsModal(); toggleTopMenu(false);" type="button" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-amber-300 hover:bg-amber-950/60 transition cursor-pointer">
+            <button onclick="closeTopMenu(); openChampionshipRingsModal();" type="button" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-amber-300 hover:bg-amber-950/60 active:bg-amber-900 transition cursor-pointer">
               <span class="flex items-center gap-2"><span>💍</span> 戒指櫃</span>
               <span id="headerRingsCount" class="font-mono bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded-full text-[9px] font-black">0</span>
             </button>
@@ -18636,13 +18639,23 @@ function createCard(basePlayer, star = 1) {
       }
     }
 
-    // 點擊畫面其他空白處時自動收起選單
-    window.addEventListener('click', (e) => {
+/* =====================================================
+       🛠️ 頂部收合選單控制 (修正版：乾淨開關)
+    ===================================================== */
+    function openTopMenu() {
       const menu = document.getElementById('topDropdownMenu');
-      if (menu && !menu.classList.contains('hidden')) {
-        menu.classList.add('hidden');
-      }
-    });
+      const backdrop = document.getElementById('topMenuBackdrop');
+      if (menu) menu.classList.remove('hidden');
+      if (backdrop) backdrop.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeTopMenu() {
+      const menu = document.getElementById('topDropdownMenu');
+      const backdrop = document.getElementById('topMenuBackdrop');
+      if (menu) menu.classList.add('hidden');
+      if (backdrop) backdrop.classList.add('hidden');
+    }
     function openUpgradeModal() {
       const modal = document.getElementById('upgradeModal');
       const container = document.getElementById('upgradeListContainer');
@@ -24750,8 +24763,8 @@ function quickAssignStarter(cardId) {
   </div>
 </div>
   <!-- 📊 擬真 NBA Box Score 戰報彈窗 -->
-<div id="gameBoxScoreModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-2xl p-5 shadow-2xl space-y-4 max-h-[85dvh] modal-scroll-touch overflow-y-auto animate-modal-in">
+<!-- 改為： -->
+<div id="gameBoxScoreModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-3 sm:p-4 pt-[max(2.5rem,env(safe-area-inset-top))]">  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-2xl p-5 shadow-2xl space-y-4 max-h-[85dvh] modal-scroll-touch overflow-y-auto animate-modal-in">
         
         <div class="flex justify-between items-center border-b border-slate-800 pb-3">
           <div class="flex items-center gap-2">
@@ -24844,8 +24857,7 @@ function quickAssignStarter(cardId) {
       </div>
     </div>
 <!-- 🔍 球員真實數據詳情彈窗 -->
-<div id="playerDetailModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-lg p-5 shadow-2xl space-y-4 max-h-[85dvh] modal-scroll-touch overflow-y-auto animate-modal-in">
+<div id="playerDetailModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-3 sm:p-4 pt-[max(2.5rem,env(safe-area-inset-top))]">  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-lg p-5 shadow-2xl space-y-4 max-h-[85dvh] modal-scroll-touch overflow-y-auto animate-modal-in">
     <!-- 頂部卡片資訊 -->
     <div class="flex justify-between items-start border-b border-slate-800 pb-3 gap-3">
       <div class="space-y-1.5 flex-1 min-w-0">
@@ -25081,8 +25093,7 @@ function quickAssignStarter(cardId) {
 <div id="toastContainer" class="fixed top-14 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2 pointer-events-none w-full max-w-sm px-4"></div>
 
 <!-- 🔔 統一系統彈窗 (P0: 替代原生 alert, 標準化樣式) -->
-<div id="unifiedGameModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[90] hidden flex items-center justify-center p-4">
-  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-modal-in relative text-center">
+<div id="unifiedGameModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[90] hidden flex items-end sm:items-center justify-center p-3 sm:p-4 pt-[max(2.5rem,env(safe-area-inset-top))]">  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-modal-in relative text-center">
     <div id="gameModalIconWrapper" class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-3xl">
       <span id="gameModalIcon">ℹ️</span>
     </div>
@@ -25100,8 +25111,7 @@ function quickAssignStarter(cardId) {
 </div>
 
 <!-- ❓ 統一確認彈窗 (P1: 取代原生 confirm, Promise/Callback 雙向相容) -->
-<div id="unifiedConfirmModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[92] hidden flex items-center justify-center p-4">
-  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-modal-in relative text-center">
+<div id="unifiedConfirmModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[92] hidden flex items-end sm:items-center justify-center p-3 sm:p-4 pt-[max(2.5rem,env(safe-area-inset-top))]">  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-modal-in relative text-center">
     <div id="confirmModalIconWrapper" class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-3xl">
       <span id="confirmModalIcon">⚠️</span>
     </div>
