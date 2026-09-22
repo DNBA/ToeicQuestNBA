@@ -122,6 +122,22 @@ button, select, input, .cursor-pointer {
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
     }
+    /* 📱 iOS PWA (加入主畫面) 專屬：避開 iPhone 14/15/16 動態島、瀏海與底部橫條 */
+    .ios-safe-modal {
+      padding-top: max(env(safe-area-inset-top), 2.75rem) !important;
+      padding-bottom: max(env(safe-area-inset-bottom), 1.5rem) !important;
+      padding-left: max(env(safe-area-inset-left), 0.75rem) !important;
+      padding-right: max(env(safe-area-inset-right), 0.75rem) !important;
+    }
+    /* 頂部關閉按鈕觸控熱區放大 (Apple HIG 建議 >= 44x44px) */
+    .modal-close-btn-touch {
+      min-width: 44px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
 /* 🌈 Prizm / Refractor 體育卡動態折射光效 */
     .prizm-card-container {
       position: relative;
@@ -430,6 +446,9 @@ button, select, input, .cursor-pointer {
           </div>
         </div>
 
+        <!-- 🔄 點選換位動態提示橫幅 (Tap-to-Swap Banner) -->
+        <div id="rosterSwapBanner" class="hidden mb-3.5"></div>
+
         <div class="mb-4">
           <div class="text-xs font-bold text-amber-400 mb-2">⭐️ 先發五人陣容 (Starting 5)</div>
           <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5" id="rosterStarters"></div>
@@ -553,8 +572,8 @@ button, select, input, .cursor-pointer {
 <!-- 👇👇👇 請直接貼在 </section> 的前一行（或緊接在下方） 👇👇👇 -->
 
 <!-- 🌟 全明星週末（第 41 場）榮譽結算彈窗 -->
-<div id="allStarEventModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-  <div class="bg-slate-900 border border-amber-500/60 rounded-3xl w-full max-w-md p-6 shadow-2xl text-center space-y-4 relative">
+<div id="allStarEventModal" onclick="if(event.target === this) resumeSimFromEvent('allStarEventModal')" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-3 sm:p-4 ios-safe-modal">
+  <div class="bg-slate-900 border border-amber-500/60 rounded-3xl w-full max-w-md p-6 shadow-2xl text-center space-y-4 relative animate-modal-in">
     <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-mono font-bold">
       ★ 2026 NBA ALL-STAR WEEKEND ★
 <button id="btnOpenThreePtFromAllStar" onclick="openThreePointContest()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-lg text-xs shadow-md cursor-pointer transition-all">
@@ -571,15 +590,15 @@ button, select, input, .cursor-pointer {
       </div>
     </div>
     <p class="text-xs text-slate-300">半程戰績斐然！聯盟特頒全明星嘉獎：<br><span class="text-amber-400 font-bold font-mono">+2 🎟️ 抽卡券 ｜ +30 💎 選秀碎片</span>！</p>
-    <button onclick="resumeSimFromEvent('allStarEventModal')" type="button" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs shadow-lg cursor-pointer">
+    <button onclick="resumeSimFromEvent('allStarEventModal')" type="button" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 text-slate-950 font-black py-3.5 rounded-2xl text-xs sm:text-sm shadow-lg cursor-pointer active:scale-98 flex items-center justify-center gap-1.5">
       收下榮譽並繼續下半季賽程 ➔
     </button>
   </div>
 </div>
 
 <!-- 🤝 季中交易截止日（第 55 場）提案彈窗 -->
-<div id="tradeDeadlineModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-  <div class="bg-slate-900 border border-indigo-500/60 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4 relative">
+<div id="tradeDeadlineModal" onclick="if(event.target === this) rejectTradeOffer()" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-3 sm:p-4 ios-safe-modal">
+  <div class="bg-slate-900 border border-indigo-500/60 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4 relative animate-modal-in">
     <div class="flex justify-between items-center border-b border-slate-800 pb-3">
       <span class="text-xs font-mono font-bold text-indigo-400 flex items-center gap-1.5">
         🚨 TRADE DEADLINE (第 55 場)
@@ -606,11 +625,11 @@ button, select, input, .cursor-pointer {
       </div>
     </div>
 
-    <div class="flex gap-2 pt-2">
-      <button onclick="rejectTradeOffer()" type="button" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl text-xs">
+    <div class="flex gap-2.5 pt-2">
+      <button onclick="rejectTradeOffer()" type="button" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3.5 rounded-2xl text-xs cursor-pointer active:scale-98 border border-slate-700">
         婉拒提案
       </button>
-      <button onclick="acceptTradeOffer()" type="button" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-2.5 rounded-xl text-xs shadow-lg">
+      <button onclick="acceptTradeOffer()" type="button" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 rounded-2xl text-xs shadow-lg cursor-pointer active:scale-98">
         達成交易！
       </button>
     </div>
@@ -925,7 +944,7 @@ button, select, input, .cursor-pointer {
   </main>
 
   <!-- ⭐ 升星所 Modal -->
-  <div id="upgradeModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex flex-col p-4 sm:p-6 hidden overflow-y-auto">
+  <div id="upgradeModal" onclick="if(event.target === this) closeUpgradeModal()" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex flex-col p-4 sm:p-6 hidden overflow-y-auto ios-safe-modal">
     <div class="max-w-4xl w-full mx-auto flex justify-between items-center mb-4">
       <div>
         <h2 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
@@ -933,7 +952,7 @@ button, select, input, .cursor-pointer {
         </h2>
         <p class="text-xs text-slate-400">消耗 2 張同星級卡片突破升星（★1➔★2 需 2 張，★2➔★3 需 2 張，OVR +2）</p>
       </div>
-      <button onclick="closeUpgradeModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-700 transition">關閉</button>
+      <button onclick="closeUpgradeModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl border border-slate-700 transition cursor-pointer active:scale-98">關閉</button>
     </div>
 
     <!-- 升星所專用篩選控制列 -->
@@ -972,10 +991,17 @@ button, select, input, .cursor-pointer {
     </div>
 
     <div class="max-w-4xl w-full mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3" id="upgradeListContainer"></div>
+
+    <!-- 📱 底部大拇指關閉按鈕 -->
+    <div class="max-w-4xl w-full mx-auto mt-6 pb-6">
+      <button onclick="closeUpgradeModal()" type="button" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3.5 rounded-2xl text-sm transition cursor-pointer active:scale-98 shadow-lg flex items-center justify-center gap-1.5 border border-slate-700">
+        <span>✕</span> 關閉升星所 (Close)
+      </button>
+    </div>
   </div>
 
   <!-- 💎 自由市場交易所 Modal -->
-  <div id="marketModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex flex-col p-4 sm:p-6 hidden overflow-y-auto">
+  <div id="marketModal" onclick="if(event.target === this) closeMarketModal()" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex flex-col p-4 sm:p-6 hidden overflow-y-auto ios-safe-modal">
     <div class="max-w-4xl w-full mx-auto flex justify-between items-center mb-4">
       <div>
         <h2 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
@@ -994,7 +1020,7 @@ button, select, input, .cursor-pointer {
         <button onclick="batchConvertCards()" type="button" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition cursor-pointer">
           ♻️ 轉化
         </button>
-        <button onclick="closeMarketModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-700 transition">關閉</button>
+        <button onclick="closeMarketModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl border border-slate-700 transition cursor-pointer active:scale-98">關閉</button>
       </div>
     </div>
 <!-- ⚡ 每日黑市快閃特惠 (Flash Market) -->
@@ -1079,10 +1105,17 @@ button, select, input, .cursor-pointer {
       </button>
     </div>
     <div class="max-w-4xl w-full mx-auto grid grid-cols-2 sm:grid-cols-4 gap-3" id="marketSellListContainer"></div>
+
+    <!-- 📱 底部大拇指關閉按鈕 -->
+    <div class="max-w-4xl w-full mx-auto mt-6 pb-6">
+      <button onclick="closeMarketModal()" type="button" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3.5 rounded-2xl text-sm transition cursor-pointer active:scale-98 shadow-lg flex items-center justify-center gap-1.5 border border-slate-700">
+        <span>✕</span> 關閉自由市場 (Close)
+      </button>
+    </div>
   </div>
 
   <!-- 🏆 16 強季後賽對戰圖表 Modal -->
-  <div id="playoffBracketModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col p-4 sm:p-6 hidden overflow-y-auto">
+  <div id="playoffBracketModal" onclick="if(event.target === this) closePlayoffBracketModal()" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col p-4 sm:p-6 hidden overflow-y-auto ios-safe-modal">
     <div class="max-w-5xl w-full mx-auto flex justify-between items-center mb-4">
       <div>
         <h2 class="text-base sm:text-lg font-black text-amber-400 flex items-center gap-2">
@@ -1090,7 +1123,7 @@ button, select, input, .cursor-pointer {
         </h2>
         <p class="text-xs text-slate-400">7 戰 4 勝制淘汰賽！推進每一輪對決，贏取總冠軍金盃與 15 張抽卡券！</p>
       </div>
-      <button onclick="closePlayoffBracketModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-700 transition">關閉</button>
+      <button onclick="closePlayoffBracketModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl border border-slate-700 transition cursor-pointer active:scale-98">關閉</button>
     </div>
 
     <div class="max-w-5xl w-full mx-auto my-auto grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
@@ -1115,10 +1148,17 @@ button, select, input, .cursor-pointer {
         <button onclick="simulatePlayoffRound(3)" id="playoffBtnR4" class="mt-4 bg-slate-800 text-slate-500 font-bold py-2 rounded-xl text-xs cursor-not-allowed" disabled>爭奪總冠軍金盃！</button>
       </div>
     </div>
+
+    <!-- 📱 底部大拇指關閉按鈕 -->
+    <div class="max-w-5xl w-full mx-auto mt-6 pb-6">
+      <button onclick="closePlayoffBracketModal()" type="button" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3.5 rounded-2xl text-sm transition cursor-pointer active:scale-98 shadow-lg flex items-center justify-center gap-1.5 border border-slate-700">
+        <span>✕</span> 關閉對戰圖表 (Close)
+      </button>
+    </div>
   </div>
 
   <!-- 📖 30 隊圖鑑集卡冊 -->
-  <div id="binderModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex flex-col p-4 sm:p-6 hidden overflow-y-auto">
+  <div id="binderModal" onclick="if(event.target === this) closeBinderModal()" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex flex-col p-4 sm:p-6 hidden overflow-y-auto ios-safe-modal">
     <div class="max-w-5xl w-full mx-auto flex justify-between items-center mb-4">
       <div>
         <h2 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
@@ -1126,24 +1166,34 @@ button, select, input, .cursor-pointer {
         </h2>
         <p class="text-xs text-slate-400">全隊 15 人集滿即可領取專屬「隊史制霸獎勵」！</p>
       </div>
-      <button onclick="closeBinderModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-700 transition">關閉</button>
+      <button onclick="closeBinderModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl border border-slate-700 transition cursor-pointer active:scale-98">關閉</button>
     </div>
     <div class="max-w-5xl w-full mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3" id="binderTeamGrid"></div>
+
+    <!-- 📱 底部大拇指關閉按鈕 -->
+    <div class="max-w-5xl w-full mx-auto mt-6 pb-6">
+      <button onclick="closeBinderModal()" type="button" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3.5 rounded-2xl text-sm transition cursor-pointer active:scale-98 shadow-lg flex items-center justify-center gap-1.5 border border-slate-700">
+        <span>✕</span> 關閉圖鑑集卡冊 (Close)
+      </button>
+    </div>
   </div>
 
   <!-- 🎁 兌換碼彈窗 -->
-  <div id="redeemModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <div id="redeemModal" onclick="if(event.target === this) closeRedeemModal()" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 hidden ios-safe-modal">
     <div class="bg-slate-900 border border-amber-500/40 rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center relative">
-      <button onclick="closeRedeemModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      <button onclick="closeRedeemModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white modal-close-btn-touch"><i data-lucide="x" class="w-5 h-5"></i></button>
       <h3 class="text-base font-black text-white mb-1">禮包兌換碼</h3>
       <p class="text-xs text-slate-400 mb-4">請輸入專屬序號進行兌換</p>
-      <input id="redeemInput" type="text" placeholder="" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-center text-sm font-mono uppercase text-amber-300 focus:outline-none mb-4">
-      <button onclick="submitRedeemCode()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition">立即兌換</button>
+      <input id="redeemInput" type="text" placeholder="" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-center text-sm font-mono uppercase text-amber-300 focus:outline-none mb-3">
+      <button onclick="submitRedeemCode()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl text-xs transition cursor-pointer active:scale-98 shadow-lg">立即兌換</button>
+      <button onclick="closeRedeemModal()" type="button" class="w-full mt-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs transition cursor-pointer active:scale-98 border border-slate-700/60">
+        取消 (Cancel)
+      </button>
     </div>
   </div>
 
   <!-- 🏪 卡店老闆遞卡包動畫場景 -->
-  <div id="cardShopOverlay" class="fixed inset-0 bg-slate-950/98 backdrop-blur-lg z-50 flex flex-col items-center justify-center p-4 hidden">
+  <div id="cardShopOverlay" class="fixed inset-0 bg-slate-950/98 backdrop-blur-lg z-50 flex flex-col items-center justify-center p-4 hidden ios-safe-modal">
     <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 text-center shadow-2xl relative">
       <div class="flex items-center justify-center gap-3 mb-4">
         <div class="w-12 h-12 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl">👴</div>
@@ -1163,15 +1213,15 @@ button, select, input, .cursor-pointer {
   </div>
 
   <!-- 💥 抽卡展示舞台 -->
-  <div id="gachaModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col justify-between p-4 sm:p-6 hidden overflow-y-auto">
+  <div id="gachaModal" onclick="if(event.target === this) closeGachaModal()" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col justify-between p-4 sm:p-6 hidden overflow-y-auto ios-safe-modal">
     <div class="max-w-5xl w-full mx-auto flex justify-between items-center z-10">
       <div>
         <h2 class="text-base sm:text-lg font-black text-amber-400">點擊卡片翻開！</h2>
         <p class="text-xs text-slate-400">獲得你的隊友</p>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="revealAllCards()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-700 transition">一鍵全部翻開</button>
-        <button onclick="closeGachaModal()" class="bg-rose-900/60 hover:bg-rose-800 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-700 transition">完成返回</button>
+        <button onclick="revealAllCards()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 transition cursor-pointer active:scale-98">一鍵全部翻開</button>
+        <button onclick="closeGachaModal()" class="bg-rose-900/60 hover:bg-rose-800 text-white text-xs font-bold px-3.5 py-2 rounded-xl border border-slate-700 transition cursor-pointer active:scale-98">完成返回</button>
       </div>
     </div>
     <div class="max-w-5xl w-full mx-auto my-auto py-2 flex flex-col items-center justify-center gap-3">
@@ -1179,14 +1229,20 @@ button, select, input, .cursor-pointer {
       <div id="gachaRowTop" class="w-full flex justify-center items-center gap-2 sm:gap-3"></div>
       <div id="gachaRowBottom" class="w-full flex justify-center items-center gap-2 sm:gap-3"></div>
     </div>
+    <!-- 📱 底部大拇指完成按鈕 -->
+    <div class="max-w-5xl w-full mx-auto mt-4 pb-4">
+      <button onclick="closeGachaModal()" type="button" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3.5 rounded-2xl text-sm transition cursor-pointer active:scale-98 shadow-lg flex items-center justify-center gap-1.5 border border-slate-700">
+        <span>✕</span> 完成翻卡並返回 (Done)
+      </button>
+    </div>
   </div>
 
   <!-- 底部固定 Tab 導航欄 -->
 <!-- 📝 10題四選一單字測驗 Modal -->
-<div id="vocabQuizModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+<div id="vocabQuizModal" onclick="if(event.target === this) closeVocabQuizModal()" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-4 hidden ios-safe-modal">
   <div class="bg-slate-900 border border-amber-500/50 rounded-3xl p-6 max-w-md w-full shadow-2xl relative text-center">
     <!-- 關閉按鈕 -->
-    <button onclick="closeVocabQuizModal()" type="button" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+    <button onclick="closeVocabQuizModal()" type="button" class="absolute top-4 right-4 text-slate-400 hover:text-white modal-close-btn-touch"><i data-lucide="x" class="w-5 h-5"></i></button>
     
     <!-- 頂部進度 -->
     <div class="flex justify-between items-center text-xs font-mono text-slate-400 mb-2">
@@ -1210,6 +1266,11 @@ button, select, input, .cursor-pointer {
     <div id="quizOptionsContainer" class="grid grid-cols-1 gap-2.5 mt-6">
       <!-- JS 動態渲染選項 -->
     </div>
+
+    <!-- 📱 底部退出按鈕 -->
+    <button onclick="closeVocabQuizModal()" type="button" class="w-full mt-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3.5 rounded-2xl text-xs transition cursor-pointer active:scale-98 border border-slate-700/60 flex items-center justify-center gap-1.5">
+      <span>✕</span> 退出測驗 (Quit)
+    </button>
   </div>
 </div>
  <nav class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 z-40 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
@@ -22072,6 +22133,14 @@ function closePlayerDetailModal() {
   const modal = document.getElementById('playerDetailModal');
   if (modal) modal.classList.add('hidden');
 }
+function handleInventoryCardClick(cardId) {
+  if (lockedRosterSlot) {
+    selectCardIntoSlot(cardId);
+    return;
+  }
+  openQuickAssignModal(cardId);
+}
+
 function renderPlayerCard(player, options = {}) {
       // 🏆 判定是否擁有 FMVP 榮譽
       const isFmvpWinner = !!player.isFmvp || (player.legacy?.fmvps > 0);
@@ -22084,7 +22153,7 @@ const borderClass = player.isLegend
       const ringMark = (player.legacy?.rings > 0) ? `💍${player.legacy.rings}` : '';
 
       return `
-        <div onclick="openQuickAssignModal('${player.cardId}')"
+        <div onclick="handleInventoryCardClick('${player.cardId}')"
              draggable="true" 
              ondragstart="handleCardDragStart(event, '${player.cardId}')"
              class="bg-slate-950 border ${borderClass} rounded-2xl p-2.5 flex flex-col justify-between text-center relative shadow-lg hover:brightness-110 active:scale-95 transition-all select-none cursor-pointer aspect-[3/4.2] overflow-hidden">
@@ -22137,8 +22206,117 @@ const borderClass = player.isLegend
     }
 
 /* =====================================================
-   🏀 球隊陣容渲染 (同隊隊套加成即時注入卡片 OVR)
+   🏀 球隊陣容渲染 (同隊隊套加成即時注入卡片 OVR & 點擊鎖定換位)
 ===================================================== */
+let lockedRosterSlot = null; // { type: 'starter' | 'bench', slot: 'PG' | 0, cardId: string, name: string, posLabel: string }
+let integratedFilter = 'ALL'; // 'ALL' | 'FIT' | 'AVAILABLE'
+
+function changeIntegratedFilter(filterType) {
+  integratedFilter = filterType;
+  renderRoster();
+}
+
+function cancelRosterLock() {
+  lockedRosterSlot = null;
+  playSound('click');
+  renderRoster();
+}
+
+function handleRosterSlotClick(type, slot) {
+  // 1. 若目前尚未鎖定任何槽位
+  if (!lockedRosterSlot) {
+    const player = (type === 'starter') ? state.startingLineup[slot] : state.benchLineup[slot];
+    const posLabel = type === 'starter' ? slot : `替補 B${Number(slot) + 1}`;
+    
+    // 無論是已有球員或空位，都鎖定並展開整合換人/換位面板
+    lockedRosterSlot = {
+      type,
+      slot,
+      cardId: player ? player.cardId : null,
+      name: player ? player.name : null,
+      posLabel
+    };
+    integratedFilter = (type === 'starter') ? 'FIT' : 'ALL';
+
+    playSound('click');
+    triggerHaptic('medium');
+    renderRoster();
+
+    setTimeout(() => {
+      document.getElementById('rosterSwapBanner')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 60);
+
+    if (player) {
+      showToast(`🔒 已鎖定 ${player.name} (${posLabel})！點選任一球員或空位即可互換，或從下方背包挑選換入`, "info");
+    } else {
+      showToast(`🎯 已選定 ${posLabel} 空位！請從下方背包挑選球員或點選現有球員放入`, "info");
+    }
+    return;
+  }
+
+  // 2. 若目前已鎖定槽位
+  // 點擊同一個槽位 -> 取消鎖定
+  if (lockedRosterSlot.type === type && String(lockedRosterSlot.slot) === String(slot)) {
+    cancelRosterLock();
+    showToast("已取消鎖定", "info");
+    return;
+  }
+
+  // 點擊了另一個槽位（無論是先發、替補、或是空位）-> 執行互換！
+  const sourceSlot = lockedRosterSlot;
+  const targetSlot = { type, slot };
+
+  const playerA = (sourceSlot.type === 'starter') ? state.startingLineup[sourceSlot.slot] : state.benchLineup[sourceSlot.slot];
+  const playerB = (targetSlot.type === 'starter') ? state.startingLineup[targetSlot.slot] : state.benchLineup[targetSlot.slot];
+
+  // 若兩邊都是空位，則直接切換選定目標
+  if (!playerA && !playerB) {
+    const posLabel = type === 'starter' ? slot : `替補 B${Number(slot) + 1}`;
+    lockedRosterSlot = {
+      type,
+      slot,
+      cardId: null,
+      name: null,
+      posLabel
+    };
+    integratedFilter = (type === 'starter') ? 'FIT' : 'ALL';
+    renderRoster();
+    return;
+  }
+
+  // 將 playerB 放入 sourceSlot
+  if (sourceSlot.type === 'starter') {
+    state.startingLineup[sourceSlot.slot] = playerB || null;
+  } else {
+    state.benchLineup[sourceSlot.slot] = playerB || null;
+  }
+
+  // 將 playerA 放入 targetSlot
+  if (targetSlot.type === 'starter') {
+    state.startingLineup[targetSlot.slot] = playerA || null;
+  } else {
+    state.benchLineup[targetSlot.slot] = playerA || null;
+  }
+
+  const sourcePosName = sourceSlot.type === 'starter' ? sourceSlot.slot : `替補 B${Number(sourceSlot.slot) + 1}`;
+  const targetPosName = targetSlot.type === 'starter' ? targetSlot.slot : `替補 B${Number(targetSlot.slot) + 1}`;
+
+  playSound('cardFlip');
+  triggerHaptic('heavy');
+
+  if (playerA && playerB) {
+    showToast(`🔄 互換成功！${playerA.name} (${targetPosName}) ⇄ ${playerB.name} (${sourcePosName})`, "success");
+  } else if (playerA) {
+    showToast(`➡️ 已將 ${playerA.name} 調至 ${targetPosName}！`, "success");
+  } else if (playerB) {
+    showToast(`➡️ 已將 ${playerB.name} 調至 ${sourcePosName}！`, "success");
+  }
+
+  lockedRosterSlot = null;
+  saveGame();
+  renderAll();
+}
+
 function renderRoster() {
   const positions = ['PG', 'SG', 'SF', 'PF', 'C'];
   const starContainer = document.getElementById('rosterStarters');
@@ -22151,12 +22329,198 @@ function renderRoster() {
 
   const hasMentorOnBench = state.benchLineup.some(p => p && p.isMentor);
 
+  // 渲染動態換位鎖定橫幅與整合球員背包
+  const swapBanner = document.getElementById('rosterSwapBanner');
+  if (swapBanner) {
+    if (lockedRosterSlot) {
+      const lockedPlayer = lockedRosterSlot.type === 'starter' 
+        ? state.startingLineup[lockedRosterSlot.slot] 
+        : state.benchLineup[lockedRosterSlot.slot];
+
+      // 取得背包去重最高星級卡
+      let cards = getHighestStarCards();
+
+      // 篩選：原位球員
+      if (lockedRosterSlot.type === 'starter' && integratedFilter === 'FIT') {
+        cards = cards.filter(c => c.positions && c.positions.includes(lockedRosterSlot.slot));
+      } else if (integratedFilter === 'AVAILABLE') {
+        cards = cards.filter(c => !isPlayerInRoster(c.cardId));
+      }
+
+      // 排序：先發按該位置最適 OVR 降序
+      cards.sort((a, b) => (b.ovr || b.baseOvr) - (a.ovr || a.baseOvr));
+
+      const slotName = lockedRosterSlot.posLabel;
+
+      swapBanner.className = "mb-4 block animate-modal-in";
+      swapBanner.innerHTML = `
+        <div class="bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950/90 border-2 border-amber-400 rounded-3xl p-3.5 sm:p-4 shadow-[0_0_30px_rgba(245,158,11,0.25)] space-y-3">
+          
+          <!-- 1. 鎖定提示資訊列 (含已鎖定球員、位置標籤、眼睛查看按鈕、換位提示與取消鈕) -->
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-slate-800">
+            <div class="flex items-center gap-3 min-w-0">
+              ${lockedPlayer ? `
+                <div class="w-12 h-12 rounded-full overflow-hidden bg-slate-950 border-2 border-amber-400 flex-shrink-0 shadow-md">
+                  <img src="${getPlayerImgUrl(lockedPlayer.nbaId)}" class="w-full h-full object-cover object-top" onerror="this.src='https://cdn.nba.com/headshots/nba/latest/1040x760/fallback.png'">
+                </div>
+              ` : `
+                <div class="w-12 h-12 rounded-full bg-slate-950 border-2 border-dashed border-amber-400 flex items-center justify-center text-amber-400 text-xl font-black flex-shrink-0">
+                  ➕
+                </div>
+              `}
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-sm font-black text-amber-300 truncate">
+                    ${lockedPlayer ? `已鎖定：${lockedPlayer.name}` : `已選定槽位：${slotName}`}
+                  </span>
+                  <span class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-amber-400 text-slate-950 font-black shadow-sm">
+                    ${slotName}
+                  </span>
+                  ${lockedPlayer ? `
+                    <button onclick="showPlayerDetails(event, '${lockedPlayer.cardId}')" type="button" 
+                            class="inline-flex items-center gap-1 text-xs font-bold text-slate-200 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-600 px-2.5 py-1 rounded-xl shadow transition active:scale-95 cursor-pointer" 
+                            title="查看球員真實數據">
+                      <span>👁️</span>
+                      <span>查看數據</span>
+                    </button>
+                  ` : ''}
+                </div>
+                <p class="text-xs text-slate-300 mt-1 leading-snug">
+                  👉 請點選下方任一<strong class="text-amber-300 font-bold">先發/替補球員或空位</strong>即可直接互換位置！也可以直接從下方<strong class="text-indigo-300 font-bold">球員背包</strong>點選球員換入：
+                </p>
+              </div>
+            </div>
+
+            <button onclick="cancelRosterLock()" type="button" 
+                    class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-600 text-xs font-bold transition active:scale-95 flex-shrink-0 cursor-pointer shadow flex items-center gap-1 self-end sm:self-center">
+              <span>✕</span> 取消鎖定
+            </button>
+          </div>
+
+          <!-- 2. 整合球員背包工具列 (篩選標籤) -->
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div class="flex items-center gap-1.5 text-xs text-amber-400 font-bold">
+              <span>🎒 球員背包庫存</span>
+              <span class="text-[10px] text-slate-400 font-normal font-mono">(點選任一張卡片即可直接換入 ${slotName})</span>
+            </div>
+            
+            <div class="flex items-center gap-1.5 text-[10px] font-mono">
+              <span class="text-slate-500">篩選:</span>
+              <button onclick="changeIntegratedFilter('ALL')" type="button"
+                      class="px-2.5 py-1 rounded-lg ${integratedFilter === 'ALL' ? 'bg-amber-500 text-slate-950 font-bold shadow' : 'bg-slate-800 text-slate-300 hover:text-white border border-slate-700'} transition cursor-pointer">
+                全部球員
+              </button>
+              ${lockedRosterSlot.type === 'starter' ? `
+                <button onclick="changeIntegratedFilter('FIT')" type="button"
+                        class="px-2.5 py-1 rounded-lg ${integratedFilter === 'FIT' ? 'bg-indigo-600 text-white font-bold shadow' : 'bg-slate-800 text-slate-300 hover:text-white border border-slate-700'} transition cursor-pointer">
+                  符合 ${lockedRosterSlot.slot}
+                </button>
+              ` : ''}
+              <button onclick="changeIntegratedFilter('AVAILABLE')" type="button"
+                      class="px-2.5 py-1 rounded-lg ${integratedFilter === 'AVAILABLE' ? 'bg-emerald-600 text-white font-bold shadow' : 'bg-slate-800 text-slate-300 hover:text-white border border-slate-700'} transition cursor-pointer">
+                未上陣
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. 整合球員背包卡片網格 (不跑版、帶眼睛與上陣狀態) -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-[290px] overflow-y-auto p-1 custom-scrollbar">
+            ${cards.length === 0 ? `
+              <div class="col-span-full py-8 text-center text-xs text-slate-500 font-mono">
+                背包中無符合此條件的球員
+              </div>
+            ` : cards.map(c => {
+              let inStarterPos = null;
+              for (const p of ['PG', 'SG', 'SF', 'PF', 'C']) {
+                if (state.startingLineup[p]?.cardId === c.cardId) {
+                  inStarterPos = p;
+                  break;
+                }
+              }
+              let inBenchIdx = -1;
+              if (Array.isArray(state.benchLineup)) {
+                inBenchIdx = state.benchLineup.findIndex(p => p && p.cardId === c.cardId);
+              }
+
+              const isEquippedInThisSlot = (lockedRosterSlot.type === 'starter' && lockedRosterSlot.slot === inStarterPos) ||
+                                          (lockedRosterSlot.type === 'bench' && Number(lockedRosterSlot.slot) === inBenchIdx);
+              const isEquippedInOtherSlot = !isEquippedInThisSlot && (inStarterPos !== null || inBenchIdx !== -1);
+              const otherSlotLabel = inStarterPos ? `先發 ${inStarterPos}` : (inBenchIdx !== -1 ? `替補 B${inBenchIdx + 1}` : '');
+              const isNatural = lockedRosterSlot.type === 'starter' ? c.positions.includes(lockedRosterSlot.slot) : true;
+
+              let statusBadge = '';
+              let borderClass = '';
+
+              if (isEquippedInThisSlot) {
+                borderClass = 'border-amber-400 bg-amber-500/15 shadow-[0_0_12px_rgba(245,158,11,0.3)]';
+                statusBadge = `<span class="text-[8px] font-black text-amber-400 bg-amber-400/20 border border-amber-400/50 px-1.5 py-0.5 rounded-full whitespace-nowrap">✓ 當前</span>`;
+              } else if (isEquippedInOtherSlot) {
+                borderClass = 'border-amber-500/50 bg-slate-950 hover:border-amber-400';
+                statusBadge = `<span class="text-[8px] font-bold text-amber-300 bg-amber-500/20 border border-amber-500/40 px-1 py-0.5 rounded whitespace-nowrap">已在 ${otherSlotLabel}</span>`;
+              } else {
+                borderClass = `${getRarityBorder(c.rarity)} bg-slate-950 hover:border-amber-400`;
+                statusBadge = `<span class="text-[8px] text-slate-400 font-mono">換入</span>`;
+              }
+
+              return `
+                <div onclick="selectCardIntoSlot('${c.cardId}')"
+                     class="border ${borderClass} rounded-xl p-2 flex items-center gap-2 cursor-pointer transition active:scale-95 hover:brightness-110 relative group bg-slate-950/90 shadow">
+                  
+                  <div class="w-9 h-9 rounded-full overflow-hidden bg-slate-900 flex-shrink-0 border border-slate-800">
+                    <img src="${getPlayerImgUrl(c.nbaId)}" class="w-full h-full object-cover object-top" onerror="this.src='https://cdn.nba.com/headshots/nba/latest/1040x760/fallback.png'">
+                  </div>
+
+                  <div class="min-w-0 flex-1 text-left">
+                    <div class="flex items-center gap-1 text-[8px] font-mono leading-tight">
+                      <span class="font-bold text-slate-400">${c.team}</span>
+                      <span class="text-indigo-400 font-bold">${c.positions.join('/')}</span>
+                      ${!isNatural ? '<span class="text-rose-400 font-bold">-5</span>' : ''}
+                    </div>
+                    <p class="text-[11px] font-black text-white truncate leading-snug">${c.name}</p>
+                    <div class="text-[9px] font-mono text-amber-400 font-bold leading-tight">OVR ${c.ovr}</div>
+                  </div>
+
+                  <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                    <button onclick="showPlayerDetails(event, '${c.cardId}')" type="button" 
+                            class="text-slate-400 hover:text-white p-0.5 hover:scale-125 transition cursor-pointer text-xs" title="查看球員真實數據">
+                      👁️
+                    </button>
+                    ${statusBadge}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+        </div>
+      `;
+    } else {
+      swapBanner.className = "hidden";
+      swapBanner.innerHTML = "";
+    }
+  }
+
   // --- 1. 先發五人陣容 ---
   starContainer.innerHTML = positions.map(pos => {
     const player = state.startingLineup[pos];
+    const isThisLocked = lockedRosterSlot && lockedRosterSlot.type === 'starter' && lockedRosterSlot.slot === pos;
+    const hasOtherLocked = lockedRosterSlot && !isThisLocked;
+
     if (!player) {
+      if (hasOtherLocked) {
+        return `
+          <div onclick="handleRosterSlotClick('starter', '${pos}')" 
+               class="bg-amber-500/10 border-2 border-dashed border-amber-400 hover:bg-amber-500/20 rounded-2xl p-2.5 flex flex-col items-center justify-between text-center min-h-[160px] transition cursor-pointer active:scale-95 group shadow-[0_0_15px_rgba(245,158,11,0.25)] animate-pulse">
+            <span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-slate-900 text-amber-400 font-mono">${pos}</span>
+            <div class="my-auto flex flex-col items-center gap-1 text-amber-300 transition">
+              <span class="text-2xl animate-bounce">⤵️</span>
+              <span class="text-[11px] font-black text-amber-300">移至 ${pos}</span>
+            </div>
+            <span class="text-[9px] text-amber-400 font-mono font-bold">點擊放入</span>
+          </div>`;
+      }
       return `
-        <div onclick="open2KSlotSelector('starter', '${pos}')" 
+        <div onclick="handleRosterSlotClick('starter', '${pos}')" 
              class="bg-slate-950/60 border-2 border-dashed border-slate-700 hover:border-amber-400 rounded-2xl p-2.5 flex flex-col items-center justify-between text-center min-h-[160px] transition cursor-pointer active:scale-95 group">
           <span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-slate-900 text-amber-400 font-mono">${pos}</span>
           <div class="my-auto flex flex-col items-center gap-1 text-slate-500 group-hover:text-amber-300 transition">
@@ -22177,17 +22541,33 @@ function renderRoster() {
     const baseCardOvr = player.ovr || player.baseOvr;
     const effectiveOvr = (baseCardOvr + playerChemAdd) - (isOOP ? 5 : 0);
 
-const isFmvpWinner = !!player.isFmvp || (player.legacy?.fmvps > 0);
+    const isFmvpWinner = !!player.isFmvp || (player.legacy?.fmvps > 0);
     const rings = player.legacy?.rings || 0;
 
-    const borderClass = isOOP 
-      ? 'border-2 border-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.4)]' 
-      : (player.isLegend ? 'silver-black-glow border-slate-200' : getRarityBorder(player.rarity));
+    let borderClass = '';
+    let lockBadge = '';
+    let bottomActionText = '';
+
+    if (isThisLocked) {
+      borderClass = 'border-2 border-amber-400 ring-4 ring-amber-400/50 shadow-[0_0_25px_rgba(245,158,11,0.7)] scale-[1.03] z-20';
+      lockBadge = `<span class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 text-[9px] font-black px-2 py-0.5 rounded-full shadow-md flex items-center gap-1 whitespace-nowrap animate-pulse">🔒 鎖定中 (點此取消)</span>`;
+      bottomActionText = `<div class="w-full mt-1"><span class="text-[8px] font-bold text-amber-300 bg-slate-900/90 px-1.5 py-0.2 rounded border border-amber-400/40">點自己取消</span></div>`;
+    } else if (hasOtherLocked) {
+      borderClass = 'border-2 border-dashed border-indigo-400/90 hover:border-amber-400 hover:scale-[1.02] shadow-[0_0_15px_rgba(99,102,241,0.35)] transition cursor-pointer';
+      bottomActionText = `<div class="w-full mt-1"><span class="text-[8px] font-black text-amber-300 bg-indigo-950/90 border border-indigo-500/60 px-1.5 py-0.2 rounded flex items-center justify-center gap-0.5 shadow">⇄ 點擊互換</span></div>`;
+    } else {
+      borderClass = isOOP 
+        ? 'border-2 border-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.4)]' 
+        : (player.isLegend ? 'silver-black-glow border-slate-200' : getRarityBorder(player.rarity));
+      bottomActionText = `<div class="w-full mt-0.5 flex justify-between items-center text-[8px] text-slate-400 font-mono"><span class="text-amber-400/90 font-bold">🔒點擊鎖定</span><span>換位</span></div>`;
+    }
 
     return `
-      <div onclick="open2KSlotSelector('starter', '${pos}')"
+      <div onclick="handleRosterSlotClick('starter', '${pos}')"
            class="bg-slate-950 border ${borderClass} rounded-2xl p-2 flex flex-col items-center justify-between text-center min-h-[160px] cursor-pointer active:scale-95 transition relative select-none hover:brightness-110">
         
+        ${lockBadge}
+
         <!-- 頂部資訊 -->
         <div class="flex justify-between w-full items-center text-[10px] font-mono">
           <div class="flex items-center gap-1">
@@ -22195,7 +22575,9 @@ const isFmvpWinner = !!player.isFmvp || (player.legacy?.fmvps > 0);
             ${isFmvpWinner ? `<span class="text-[8px] font-black bg-amber-400 text-slate-950 px-1 rounded shadow-sm">🏆FMVP</span>` : ''}
             ${rings > 0 ? `<span class="text-[8px] text-amber-300 font-bold">💍${rings}</span>` : ''}
           </div>
-          <button onclick="event.stopPropagation(); removeStarter('${pos}');" type="button" class="text-slate-500 hover:text-rose-400 p-0.5 transition" title="卸下">✕</button>
+          <div class="flex items-center gap-1">
+            <button onclick="event.stopPropagation(); removeStarter('${pos}');" type="button" class="text-slate-500 hover:text-rose-400 p-0.5 transition cursor-pointer" title="卸下">✕</button>
+          </div>
         </div>
 
         <!-- 球員頭像 -->
@@ -22215,15 +22597,30 @@ const isFmvpWinner = !!player.isFmvp || (player.legacy?.fmvps > 0);
           </div>
         </div>
 
-        <span class="text-[8px] text-slate-500 font-mono mt-0.5">點擊替換</span>
+        ${bottomActionText}
       </div>`;
   }).join('');
 
   // --- 2. 替補六人陣容 ---
   benchContainer.innerHTML = state.benchLineup.map((player, idx) => {
+    const isThisLocked = lockedRosterSlot && lockedRosterSlot.type === 'bench' && Number(lockedRosterSlot.slot) === idx;
+    const hasOtherLocked = lockedRosterSlot && !isThisLocked;
+
     if (!player) {
+      if (hasOtherLocked) {
+        return `
+          <div onclick="handleRosterSlotClick('bench', ${idx})" 
+               class="bg-amber-500/10 border-2 border-dashed border-amber-400 hover:bg-amber-500/20 rounded-xl p-2 flex flex-col items-center justify-between text-center min-h-[140px] transition cursor-pointer active:scale-95 group shadow-[0_0_12px_rgba(245,158,11,0.25)] animate-pulse">
+            <span class="text-[9px] text-amber-400 font-mono font-bold">B${idx+1}</span>
+            <div class="my-auto flex flex-col items-center gap-1 text-amber-300 transition">
+              <span class="text-xl animate-bounce">⤵️</span>
+              <span class="text-[10px] font-black">移至替補</span>
+            </div>
+            <span class="text-[8px] text-amber-400 font-mono">點擊放入</span>
+          </div>`;
+      }
       return `
-        <div onclick="open2KSlotSelector('bench', ${idx})" 
+        <div onclick="handleRosterSlotClick('bench', ${idx})" 
              class="bg-slate-950/40 border-2 border-dashed border-slate-800 hover:border-indigo-400 rounded-xl p-2 flex flex-col items-center justify-between text-center min-h-[140px] transition cursor-pointer active:scale-95 group">
           <span class="text-[9px] text-slate-500 font-mono">B${idx+1}</span>
           <div class="my-auto flex flex-col items-center gap-1 text-slate-600 group-hover:text-indigo-300 transition">
@@ -22234,24 +22631,44 @@ const isFmvpWinner = !!player.isFmvp || (player.legacy?.fmvps > 0);
         </div>`;
     }
 
-    const borderClass = player.isLegend ? 'silver-black-glow border-slate-200' : getRarityBorder(player.rarity);
-const isFmvpWinner = !!player.isFmvp || (player.legacy?.fmvps > 0);    const rings = player.legacy?.rings || 0;
+    let borderClass = '';
+    let lockBadge = '';
+    let bottomActionText = '';
+
+    if (isThisLocked) {
+      borderClass = 'border-2 border-amber-400 ring-4 ring-amber-400/50 shadow-[0_0_20px_rgba(245,158,11,0.7)] scale-[1.03] z-20';
+      lockBadge = `<span class="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 text-[8px] font-black px-1.5 py-0.2 rounded-full shadow-md whitespace-nowrap animate-pulse">🔒 鎖定</span>`;
+      bottomActionText = `<div class="w-full mt-0.5"><span class="text-[7px] font-bold text-amber-300 bg-slate-900 px-1 rounded border border-amber-400/40">點自己取消</span></div>`;
+    } else if (hasOtherLocked) {
+      borderClass = 'border-2 border-dashed border-indigo-400/90 hover:border-amber-400 hover:scale-[1.02] shadow-[0_0_12px_rgba(99,102,241,0.3)] transition cursor-pointer';
+      bottomActionText = `<div class="w-full mt-0.5"><span class="text-[7px] font-black text-amber-300 bg-indigo-950 border border-indigo-500/50 px-1 rounded flex items-center justify-center gap-0.5 shadow">⇄ 點此互換</span></div>`;
+    } else {
+      borderClass = player.isLegend ? 'silver-black-glow border-slate-200' : getRarityBorder(player.rarity);
+      bottomActionText = `<div class="w-full mt-0.5 flex justify-between items-center text-[7px] text-slate-400 font-mono"><span class="text-amber-400/90 font-bold">🔒點擊鎖定</span><span>換位</span></div>`;
+    }
+
+    const isFmvpWinner = !!player.isFmvp || (player.legacy?.fmvps > 0);
+    const rings = player.legacy?.rings || 0;
 
     // 💡 替補同隊球員一樣享受隊套加成
     const isTeamThemeBuffed = (player.team === dominantTeam && chemBonus > 0);
     const effectiveOvr = (player.ovr || player.baseOvr) + (isTeamThemeBuffed ? chemBonus : 0);
 
     return `
-      <div onclick="open2KSlotSelector('bench', ${idx})" 
+      <div onclick="handleRosterSlotClick('bench', ${idx})" 
            class="bg-slate-950/80 border ${borderClass} rounded-xl p-1.5 flex flex-col items-center justify-between text-center min-h-[140px] cursor-pointer active:scale-95 transition select-none hover:brightness-110 relative">
         
+        ${lockBadge}
+
         <div class="flex justify-between w-full items-center text-[9px] text-slate-500 font-mono">
           <div class="flex items-center gap-1">
             <span>B${idx+1}</span>
             ${isFmvpWinner ? `<span class="text-[7px] font-black bg-amber-400 text-slate-950 px-1 rounded">FMVP</span>` : ''}
             ${rings > 0 ? `<span class="text-[8px] text-amber-300 font-bold">💍${rings}</span>` : ''}
           </div>
-          <button onclick="event.stopPropagation(); removeBench(${idx});" type="button" class="text-slate-500 hover:text-rose-400 p-0.5 transition" title="卸下">✕</button>
+          <div class="flex items-center gap-1">
+            <button onclick="event.stopPropagation(); removeBench(${idx});" type="button" class="text-slate-500 hover:text-rose-400 p-0.5 transition cursor-pointer" title="卸下">✕</button>
+          </div>
         </div>
         
         <div class="w-9 h-9 rounded-full overflow-hidden pointer-events-none bg-slate-900 my-0.5 border border-slate-800">
@@ -22269,7 +22686,7 @@ const isFmvpWinner = !!player.isFmvp || (player.legacy?.fmvps > 0);    const rin
           </div>
         </div>
         
-        <span class="text-[8px] text-slate-500 font-mono">點擊替換</span>
+        ${bottomActionText}
       </div>`;
   }).join('');
 
@@ -24957,8 +25374,8 @@ function quickAssignStarter(cardId) {
   showToast(`${card.name} 已指派先發！`, "success");
 } </script>
 <!-- 🏀 季後賽逐場動態播報彈窗 -->
-<div id="playoffSeriesModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-  <div class="bg-slate-900 border border-amber-500/50 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4 relative">
+<div id="playoffSeriesModal" onclick="if(event.target === this && !document.getElementById('posNextRoundBtn').disabled) closeSeriesAndShowBoxScore()" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-3 sm:p-4 ios-safe-modal">
+  <div class="bg-slate-900 border border-amber-500/50 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4 relative animate-modal-in">
     <div class="flex justify-between items-center border-b border-slate-800 pb-3">
       <div>
         <span id="posRoundTitle" class="text-xs font-mono font-bold text-amber-400">季後賽首輪 (Best of 7)</span>
@@ -24972,8 +25389,8 @@ function quickAssignStarter(cardId) {
       <!-- 單場賽果卡片動態塞入 -->
     </div>
 
-<div class="pt-2">
-      <button id="posNextRoundBtn" onclick="closeSeriesAndShowBoxScore()" type="button" class="w-full bg-slate-800 text-slate-500 font-black py-2.5 rounded-xl text-xs cursor-not-allowed transition" disabled>
+    <div class="pt-2">
+      <button id="posNextRoundBtn" onclick="closeSeriesAndShowBoxScore()" type="button" class="w-full bg-slate-800 text-slate-500 font-black py-3.5 rounded-2xl text-xs sm:text-sm cursor-not-allowed transition active:scale-98 flex items-center justify-center gap-1.5" disabled>
         ⏳ 戰況激烈播報中...
       </button>
     </div>
@@ -24981,7 +25398,7 @@ function quickAssignStarter(cardId) {
 </div>
   <!-- 📊 擬真 NBA Box Score 戰報彈窗 -->
 <!-- 改為： -->
-<div id="gameBoxScoreModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-3 sm:p-4 pt-[max(2.5rem,env(safe-area-inset-top))]">  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-2xl p-5 shadow-2xl space-y-4 max-h-[85dvh] modal-scroll-touch overflow-y-auto animate-modal-in">
+<div id="gameBoxScoreModal" onclick="if(event.target === this) closeGameBoxScoreModal()" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-3 sm:p-4 ios-safe-modal">  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-2xl p-5 shadow-2xl space-y-4 max-h-[85dvh] modal-scroll-touch overflow-y-auto animate-modal-in">
         
         <div class="flex justify-between items-center border-b border-slate-800 pb-3">
           <div class="flex items-center gap-2">
@@ -24991,7 +25408,7 @@ function quickAssignStarter(cardId) {
               <span class="text-[10px] text-slate-400 font-mono">OFFICIAL GAME STATS</span>
             </div>
           </div>
-          <button onclick="closeGameBoxScoreModal()" type="button" class="text-slate-400 hover:text-white p-1 text-sm font-bold cursor-pointer">✕</button>
+          <button onclick="closeGameBoxScoreModal()" type="button" class="text-slate-400 hover:text-white modal-close-btn-touch text-lg font-bold cursor-pointer -mr-2 -mt-2">✕</button>
         </div>
 
         <div class="flex justify-between items-center bg-slate-950 p-4 rounded-2xl border border-slate-800">
@@ -25066,15 +25483,16 @@ function quickAssignStarter(cardId) {
             <tbody id="modalBoxScoreTbody" class="divide-y divide-slate-800/60 font-mono text-slate-200 text-xs"></tbody>
           </table>
         </div>
-        <div class="flex justify-end pt-2">
-          <button onclick="closeGameBoxScoreModal()" type="button" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 text-slate-950 font-black px-6 py-2.5 rounded-xl text-xs cursor-pointer transition shadow-lg">
-            確定收下戰報
+        <div class="pt-2">
+          <button onclick="closeGameBoxScoreModal()" type="button" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 text-slate-950 font-black py-3.5 rounded-2xl text-sm cursor-pointer transition shadow-lg flex items-center justify-center gap-1.5 active:scale-98">
+            <span>✕</span> 關閉並收下戰報 (Close)
           </button>
         </div>
       </div>
     </div>
 <!-- 🔍 球員真實數據詳情彈窗 -->
-<div id="playerDetailModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-3 sm:p-4 pt-[max(2.5rem,env(safe-area-inset-top))]">  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-lg p-5 shadow-2xl space-y-4 max-h-[85dvh] modal-scroll-touch overflow-y-auto animate-modal-in">
+<div id="playerDetailModal" onclick="if(event.target === this) closePlayerDetailModal()" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[130] hidden flex items-end sm:items-center justify-center p-3 sm:p-4 ios-safe-modal">
+  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-lg p-5 shadow-2xl space-y-4 max-h-[85dvh] modal-scroll-touch overflow-y-auto animate-modal-in">
     <!-- 頂部卡片資訊 -->
     <div class="flex justify-between items-start border-b border-slate-800 pb-3 gap-3">
       <div class="space-y-1.5 flex-1 min-w-0">
@@ -25096,7 +25514,7 @@ function quickAssignStarter(cardId) {
         <button onclick="openBadgeGuideModal()" type="button" class="bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 border border-indigo-500/40 text-[10px] font-bold px-2.5 py-1.5 rounded-xl transition cursor-pointer" title="查閱所有徽章用處">
           ❓ 徽章指南
         </button>
-        <button onclick="closePlayerDetailModal()" class="text-slate-400 hover:text-white p-1 text-base font-bold cursor-pointer transition">✕</button>
+        <button onclick="closePlayerDetailModal()" type="button" class="text-slate-400 hover:text-white modal-close-btn-touch text-lg font-bold cursor-pointer transition -mr-2 -mt-2" title="關閉詳情">✕</button>
       </div>
     </div>
 
@@ -25157,21 +25575,24 @@ function quickAssignStarter(cardId) {
       <div id="detailAdvGrid" class="grid grid-cols-3 gap-2 text-center text-xs font-mono"></div>
     </div>
 
-    <button onclick="closePlayerDetailModal()" type="button" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2 rounded-xl text-xs transition cursor-pointer">
-      關閉詳情
-    </button>
+    <!-- 📱 底部大拇指極佳觸控按鈕 -->
+    <div class="pt-1">
+      <button onclick="closePlayerDetailModal()" type="button" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3.5 rounded-2xl text-sm transition cursor-pointer active:scale-98 shadow-lg flex items-center justify-center gap-1.5 border border-slate-700">
+        <span>✕</span> 關閉詳情 (Close)
+      </button>
+    </div>
   </div>
 </div>
 
 <!-- 📜 10 大徽章全典圖鑑指南 Modal -->
-<div id="badgeGuideModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+<div id="badgeGuideModal" onclick="if(event.target === this) closeBadgeGuideModal()" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-3 sm:p-4 ios-safe-modal">
   <div class="bg-slate-900 border border-indigo-500/60 rounded-3xl w-full max-w-lg p-5 shadow-2xl space-y-3 max-h-[85vh] flex flex-col">
     <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
       <div class="flex items-center gap-2">
         <span class="text-lg">🏅</span>
         <h3 class="text-sm font-black text-white">NBA 特色徽章全解析指南</h3>
       </div>
-      <button onclick="closeBadgeGuideModal()" class="text-slate-400 hover:text-white p-1 text-sm font-bold cursor-pointer">✕</button>
+      <button onclick="closeBadgeGuideModal()" type="button" class="text-slate-400 hover:text-white modal-close-btn-touch text-lg font-bold cursor-pointer -mr-2 -mt-2">✕</button>
     </div>
     
     <p class="text-[11px] text-slate-400">徽章會直接影響 82 場模擬與季後賽戰局！由球員真實賽季數據驅動：</p>
@@ -25180,13 +25601,13 @@ function quickAssignStarter(cardId) {
       <!-- 由 JS 動態注入 10 大徽章解說 -->
     </div>
 
-    <button onclick="closeBadgeGuideModal()" type="button" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2 rounded-xl text-xs transition cursor-pointer">
-      了解完畢
+    <button onclick="closeBadgeGuideModal()" type="button" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3.5 rounded-2xl text-sm transition cursor-pointer active:scale-98 shadow-lg flex items-center justify-center gap-1.5 border border-slate-700">
+      <span>✕</span> 了解完畢並關閉 (Close)
     </button>
   </div>
 </div>
 <!-- 🎯 全明星三分球大賽彈窗 (響應式 Flex 版) -->
-<div id="threePtModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-2.5 sm:p-4 select-none">
+<div id="threePtModal" onclick="if(event.target === this) closeThreePointContest()" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-end sm:items-center justify-center p-2.5 sm:p-4 select-none ios-safe-modal">
   <div class="bg-slate-900 border-2 border-amber-500/50 rounded-2xl max-w-lg w-full p-3 sm:p-5 text-white shadow-2xl relative overflow-hidden flex flex-col items-center">
     
     <!-- 頂部標題與選手切換下拉選單 -->
@@ -25208,7 +25629,7 @@ function quickAssignStarter(cardId) {
           </div>
         </div>
       </div>
-      <button onclick="closeThreePointContest()" class="text-slate-400 hover:text-white text-xl font-bold px-2">✕</button>
+      <button onclick="closeThreePointContest()" class="text-slate-400 hover:text-white modal-close-btn-touch text-xl font-bold -mr-2 -mt-2">✕</button>
     </div>
 
     <!-- 5 個投籃點球架進度 (響應式 Flex 排列、移除多餘左右間距) -->
@@ -25310,7 +25731,7 @@ function quickAssignStarter(cardId) {
 <div id="toastContainer" class="fixed top-14 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2 pointer-events-none w-full max-w-sm px-4"></div>
 
 <!-- 🔔 統一系統彈窗 (P0: 替代原生 alert, 標準化樣式) -->
-<div id="unifiedGameModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[90] hidden flex items-end sm:items-center justify-center p-3 sm:p-4 pt-[max(2.5rem,env(safe-area-inset-top))]">  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-modal-in relative text-center">
+<div id="unifiedGameModal" onclick="if(event.target === this) closeGameModal()" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[90] hidden flex items-end sm:items-center justify-center p-3 sm:p-4 ios-safe-modal">  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-modal-in relative text-center">
     <div id="gameModalIconWrapper" class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-3xl">
       <span id="gameModalIcon">ℹ️</span>
     </div>
@@ -25320,7 +25741,7 @@ function quickAssignStarter(cardId) {
     </div>
     <div id="gameModalCustomContent" class="text-left hidden"></div>
     <div class="pt-2">
-      <button id="gameModalConfirmBtn" onclick="closeGameModal()" type="button" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black py-2.5 rounded-xl text-sm transition cursor-pointer active:scale-98 shadow-lg">
+      <button id="gameModalConfirmBtn" onclick="closeGameModal()" type="button" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black py-3.5 rounded-2xl text-sm transition cursor-pointer active:scale-98 shadow-lg flex items-center justify-center gap-1.5">
         確定
       </button>
     </div>
@@ -25328,7 +25749,7 @@ function quickAssignStarter(cardId) {
 </div>
 
 <!-- ❓ 統一確認彈窗 (P1: 取代原生 confirm, Promise/Callback 雙向相容) -->
-<div id="unifiedConfirmModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[92] hidden flex items-end sm:items-center justify-center p-3 sm:p-4 pt-[max(2.5rem,env(safe-area-inset-top))]">  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-modal-in relative text-center">
+<div id="unifiedConfirmModal" onclick="if(event.target === this) { const c = document.getElementById('confirmModalCancelBtn'); if(c) c.click(); }" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[92] hidden flex items-end sm:items-center justify-center p-3 sm:p-4 ios-safe-modal">  <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-modal-in relative text-center">
     <div id="confirmModalIconWrapper" class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-3xl">
       <span id="confirmModalIcon">⚠️</span>
     </div>
@@ -25337,10 +25758,10 @@ function quickAssignStarter(cardId) {
       <p id="confirmModalMessage" class="text-sm text-slate-300 mt-2 leading-relaxed whitespace-pre-line"></p>
     </div>
     <div class="flex gap-3 pt-2">
-      <button id="confirmModalCancelBtn" type="button" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">
+      <button id="confirmModalCancelBtn" type="button" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl text-xs transition cursor-pointer active:scale-98 border border-slate-700">
         取消
       </button>
-      <button id="confirmModalOkBtn" type="button" class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition cursor-pointer">
+      <button id="confirmModalOkBtn" type="button" class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-2xl text-xs transition cursor-pointer active:scale-98 shadow-lg">
         確定執行
       </button>
     </div>
@@ -25348,7 +25769,7 @@ function quickAssignStarter(cardId) {
 </div>
 
 <!-- 🎁 統一高規格獎勵結算彈窗 (P1: Reward Window 簽到/升星/奪冠/任務全解) -->
-<div id="unifiedRewardModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[95] hidden flex items-center justify-center p-4">
+<div id="unifiedRewardModal" onclick="if(event.target === this) closeRewardModal()" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[95] hidden flex items-end sm:items-center justify-center p-3 sm:p-4 ios-safe-modal">
   <div class="relative bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/60 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-modal-in text-center overflow-hidden">
     <!-- 光暈背景 -->
     <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-amber-500/20 rounded-full blur-3xl pointer-events-none reward-glow-pulse"></div>
@@ -25368,8 +25789,8 @@ function quickAssignStarter(cardId) {
     <div id="rewardModalNoteBox" class="relative z-10 hidden p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-amber-200"></div>
 
     <div class="relative z-10 pt-2">
-      <button id="rewardModalClaimBtn" onclick="closeRewardModal()" type="button" class="w-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:brightness-110 text-slate-950 font-black py-3 rounded-xl text-sm transition cursor-pointer active:scale-98 shadow-xl">
-        領取獎勵 (Claim)
+      <button id="rewardModalClaimBtn" onclick="closeRewardModal()" type="button" class="w-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:brightness-110 text-slate-950 font-black py-3.5 rounded-2xl text-sm transition cursor-pointer active:scale-98 shadow-xl flex items-center justify-center gap-1.5">
+        <span>🎁</span> 領取獎勵 (Claim)
       </button>
     </div>
   </div>
@@ -25385,8 +25806,8 @@ function quickAssignStarter(cardId) {
 </div>
 
 <!-- 📬 通知中心抽屜 (P2: Notification Center) -->
-<div id="notificationDrawer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[85] hidden flex justify-end">
-  <div class="bg-slate-900 border-l border-slate-800 w-full max-w-sm h-full flex flex-col shadow-2xl animate-modal-in">
+<div id="notificationDrawer" onclick="if(event.target === this) toggleNotificationDrawer(false)" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[85] hidden flex justify-end">
+  <div class="bg-slate-900 border-l border-slate-800 w-full max-w-sm h-full flex flex-col shadow-2xl animate-modal-in pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
     <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/60">
       <div class="flex items-center gap-2">
         <i data-lucide="bell" class="w-4 h-4 text-amber-400"></i>
@@ -25406,10 +25827,10 @@ function quickAssignStarter(cardId) {
 <!-- =====================================================
      🎉 奪冠香檳遊行慶典彈窗 (CHAMPIONSHIP CELEBRATION MODAL)
 ===================================================== -->
-<div id="championshipCelebrationModal" class="fixed inset-0 bg-slate-950/92 backdrop-blur-lg z-[105] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+<div id="championshipCelebrationModal" onclick="if(event.target === this) claimCelebrationAndShowRewards()" class="fixed inset-0 bg-slate-950/92 backdrop-blur-lg z-[105] hidden flex items-end sm:items-center justify-center p-3 sm:p-4 ios-safe-modal overflow-y-auto">
   <canvas id="celebrationConfettiCanvas" class="fixed inset-0 pointer-events-none z-30 w-full h-full"></canvas>
 
-  <div class="relative z-20 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/80 rounded-3xl w-full max-w-xl p-5 sm:p-6 shadow-[0_0_50px_rgba(245,158,11,0.35)] space-y-4 text-center overflow-hidden newspaper-unfold">
+  <div class="relative z-20 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/80 rounded-3xl w-full max-w-xl p-5 sm:p-6 shadow-[0_0_50px_rgba(245,158,11,0.35)] space-y-4 text-center overflow-hidden newspaper-unfold animate-modal-in">
     
     <!-- 背景光環與報紙頭條 -->
     <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-80 h-80 bg-amber-500/25 rounded-full blur-3xl pointer-events-none reward-glow-pulse"></div>
@@ -25482,10 +25903,10 @@ function quickAssignStarter(cardId) {
 
     <!-- 🏆 底部操作按鈕組 (收在彈窗內部，不會漏到首頁，且能正常領取獎勵！) -->
     <div class="relative pt-2 flex flex-col sm:flex-row gap-2.5">
-      <button onclick="goToRingsCabinetFromCelebration()" type="button" class="flex-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40 font-bold py-3 rounded-xl text-xs transition cursor-pointer active:scale-98 flex items-center justify-center gap-1.5">
+      <button onclick="goToRingsCabinetFromCelebration()" type="button" class="flex-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40 font-bold py-3.5 rounded-2xl text-xs transition cursor-pointer active:scale-98 flex items-center justify-center gap-1.5">
         <span>🏆</span> 前往總冠軍展示櫃
       </button>
-      <button onclick="claimCelebrationAndShowRewards()" type="button" class="flex-1 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:brightness-110 text-slate-950 font-black py-3 rounded-xl text-sm transition cursor-pointer active:scale-98 shadow-xl flex items-center justify-center gap-1.5">
+      <button onclick="claimCelebrationAndShowRewards()" type="button" class="flex-1 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:brightness-110 text-slate-950 font-black py-3.5 rounded-2xl text-sm transition cursor-pointer active:scale-98 shadow-xl flex items-center justify-center gap-1.5">
         <span>🎁</span> 領取奪冠榮耀獎勵 (Claim)
       </button>
     </div>
@@ -25496,7 +25917,7 @@ function quickAssignStarter(cardId) {
 <!-- =====================================================
      💍 總冠軍戒指展示櫃彈窗 (CHAMPIONSHIP RINGS CABINET)
 ===================================================== -->
-<div id="championshipRingsModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[100] hidden flex items-center justify-center p-3 sm:p-4">
+<div id="championshipRingsModal" onclick="if(event.target === this) closeChampionshipRingsModal()" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[100] hidden flex items-end sm:items-center justify-center p-3 sm:p-4 ios-safe-modal">
   <div class="bg-slate-900 border border-amber-500/50 rounded-3xl w-full max-w-4xl p-5 sm:p-6 shadow-2xl space-y-4 relative animate-modal-in flex flex-col max-h-[92vh]">
     
     <!-- 頂部標題與計數 -->
@@ -25513,7 +25934,7 @@ function quickAssignStarter(cardId) {
           <p class="text-[11px] text-slate-400">每次奪冠刻印：奪冠賽季年份、季後賽總戰績、總決賽對手與 FMVP 殊榮</p>
         </div>
       </div>
-      <button onclick="closeChampionshipRingsModal()" class="text-slate-400 hover:text-white p-1 text-sm font-bold cursor-pointer">✕</button>
+      <button onclick="closeChampionshipRingsModal()" class="text-slate-400 hover:text-white modal-close-btn-touch text-lg font-bold cursor-pointer -mr-2 -mt-2">✕</button>
     </div>
 
     <!-- 戒指展示櫃陳列網格 (支援水平滾動/響應式網格) -->
@@ -25523,11 +25944,11 @@ function quickAssignStarter(cardId) {
       </div>
     </div>
 
-    <!-- 底部說明列 -->
-    <div class="pt-2 border-t border-slate-800 flex justify-between items-center text-[11px] text-slate-400">
-      <span>💡 點擊任一戒指可全景檢視 3D 造型與冠軍戰績細節</span>
-      <button onclick="closeChampionshipRingsModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-1.5 rounded-xl cursor-pointer text-xs">
-        返回遊戲
+    <!-- 底部說明與大拇指按鈕 -->
+    <div class="pt-3 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-2.5 text-[11px] text-slate-400">
+      <span class="hidden sm:inline">💡 點擊任一戒指可全景檢視 3D 造型與冠軍戰績細節</span>
+      <button onclick="closeChampionshipRingsModal()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3.5 sm:py-2.5 px-6 rounded-2xl cursor-pointer text-sm active:scale-98 border border-slate-700 flex items-center justify-center gap-1.5 shadow-lg">
+        <span>✕</span> 返回遊戲 (Close)
       </button>
     </div>
 
@@ -25537,12 +25958,12 @@ function quickAssignStarter(cardId) {
 <!-- =====================================================
      🔍 冠軍戒指全景詳細檢視彈窗 (RING DETAIL INSPECT MODAL)
 ===================================================== -->
-<div id="ringDetailModal" class="fixed inset-0 bg-slate-950/92 backdrop-blur-md z-[108] hidden flex items-center justify-center p-4">
+<div id="ringDetailModal" onclick="if(event.target === this) closeRingDetailModal()" class="fixed inset-0 bg-slate-950/92 backdrop-blur-md z-[108] hidden flex items-end sm:items-center justify-center p-3 sm:p-4 ios-safe-modal">
   <div class="bg-slate-900 border border-amber-500/60 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 text-center relative animate-modal-in">
     
     <div class="flex justify-between items-center border-b border-slate-800 pb-2">
       <h3 id="detailRingYear" class="font-black text-base text-amber-400 font-mono">2026 NBA 總冠軍戒指</h3>
-      <button onclick="closeRingDetailModal()" class="text-slate-400 hover:text-white text-sm font-bold cursor-pointer">✕</button>
+      <button onclick="closeRingDetailModal()" class="text-slate-400 hover:text-white modal-close-btn-touch text-lg font-bold cursor-pointer -mr-2 -mt-2">✕</button>
     </div>
 
     <!-- 3D 戒指放大展示 -->
@@ -25577,20 +25998,23 @@ function quickAssignStarter(cardId) {
       </div>
     </div>
 
-    <button onclick="closeRingDetailModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">
-      關閉檢視 (Close)
+    <button onclick="closeRingDetailModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3.5 rounded-2xl text-sm transition cursor-pointer active:scale-98 border border-slate-700 flex items-center justify-center gap-1.5 shadow-lg">
+      <span>✕</span> 關閉檢視 (Close)
     </button>
   </div>
 </div>
 <!-- 📱 手機專用：點擊卡片指定上陣位置選單 -->
-<div id="quickAssignModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[115] hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+<div id="quickAssignModal" onclick="if(event.target === this) closeQuickAssignModal()" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[115] hidden flex items-end sm:items-center justify-center p-0 sm:p-4 ios-safe-modal">
   <div class="bg-slate-900 border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-3 animate-modal-in">
     <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
       <div>
-        <h4 id="qaPlayerName" class="text-sm font-black text-white">指定球員上陣</h4>
+        <div class="flex items-center gap-2">
+          <h4 id="qaPlayerName" class="text-sm font-black text-white">指定球員上陣</h4>
+          <button id="qaEyeBtn" onclick="if(currentAssignCardId) showPlayerDetails(event, currentAssignCardId)" type="button" class="text-slate-400 hover:text-white p-0.5 hover:scale-125 transition cursor-pointer text-sm" title="查看球員真實數據">👁️</button>
+        </div>
         <p id="qaPlayerPos" class="text-[10px] text-amber-400 font-mono">原位置: PG</p>
       </div>
-      <button onclick="closeQuickAssignModal()" type="button" class="text-slate-400 hover:text-white p-1 text-sm font-bold cursor-pointer">✕</button>
+      <button onclick="closeQuickAssignModal()" type="button" class="text-slate-400 hover:text-white modal-close-btn-touch text-lg font-bold cursor-pointer -mr-2 -mt-2">✕</button>
     </div>
 
     <div class="space-y-1.5 text-xs">
@@ -25607,141 +26031,96 @@ function quickAssignStarter(cardId) {
       <button onclick="assignToBenchSlot()" type="button" class="w-full py-2.5 bg-indigo-950/60 hover:bg-indigo-900 border border-indigo-700/50 text-indigo-300 font-bold rounded-xl transition">
         + 放入替補席 (Bench 6)
       </button>
+
+      <!-- 📱 底部取消關閉按鈕 -->
+      <button onclick="closeQuickAssignModal()" type="button" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl text-xs transition active:scale-98 border border-slate-700 flex items-center justify-center gap-1.5 shadow-lg mt-2">
+        ✕ 取消並關閉 (Cancel)
+      </button>
     </div>
   </div>
 </div>
-<!-- 🎮 2K MyTEAM 陣容選卡彈窗抽屜 (Player Card Selector) -->
-<div id="myteamCardDrawer" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[120] hidden flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-  <div class="bg-slate-900 border-t sm:border border-slate-700 rounded-t-3xl sm:rounded-3xl w-full max-w-xl max-h-[85vh] sm:max-h-[80vh] flex flex-col shadow-2xl overflow-hidden animate-modal-in">
-    
-    <!-- 頂部：標題與插槽資訊 -->
-    <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-black bg-amber-500 text-slate-950 px-2 py-0.5 rounded font-mono" id="myteamSlotBadge">PG</span>
-          <h3 class="text-sm font-black text-white" id="myteamDrawerTitle">選擇球員換入陣容</h3>
-        </div>
-        <p class="text-[10px] text-slate-400 mt-0.5">點擊卡片直接替換 ｜ 優先排列符合位置球員</p>
-      </div>
-      <button onclick="close2KSlotSelector()" type="button" class="w-8 h-8 rounded-full bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center font-bold text-sm cursor-pointer">✕</button>
-    </div>
-
-    <!-- 快速位置篩選鈕 -->
-    <div class="px-4 py-2 bg-slate-950/80 border-b border-slate-800/80 flex items-center gap-1.5 overflow-x-auto text-[10px] font-mono">
-      <span class="text-slate-500 whitespace-nowrap">篩選:</span>
-      <button onclick="filter2KDrawer('ALL')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-amber-300 font-bold flex-shrink-0" id="btnFilter2K_ALL">全部卡片</button>
-      <button onclick="filter2KDrawer('FIT')" class="px-2.5 py-1 rounded-lg bg-indigo-900/60 text-indigo-300 font-bold border border-indigo-700/50 flex-shrink-0" id="btnFilter2K_FIT">原位球員</button>
-    </div>
-
-    <!-- 可選卡片庫清單 (2K 橫向/網格卡磚) -->
-    <div id="myteamCardGrid" class="flex-1 overflow-y-auto p-4 grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-      <!-- JS 動態填入玩家目前背包卡片 -->
-    </div>
-  </div>
-</div>
-
 <script>
-let current2KTarget = { type: 'starter', slot: 'PG' }; // 當前正在挑選哪一個卡槽
-let current2KFilter = 'ALL';
+let current2KTarget = { type: 'starter', slot: 'PG' };
 
 function open2KSlotSelector(type, slot) {
-  current2KTarget = { type, slot };
-  current2KFilter = (type === 'starter') ? 'FIT' : 'ALL'; // 先發預設只看原位
-
-  const badgeEl = document.getElementById('myteamSlotBadge');
-  const titleEl = document.getElementById('myteamDrawerTitle');
-  if (badgeEl) badgeEl.innerText = type === 'starter' ? slot : `替補 B${Number(slot)+1}`;
-  if (titleEl) titleEl.innerText = type === 'starter' ? `選擇先發 ${slot} 球員` : `選擇替補 B${Number(slot)+1} 球員`;
-
-  render2KDrawerCards();
-  document.getElementById('myteamCardDrawer').classList.remove('hidden');
+  // 整合介面：點擊選卡直接切換鎖定該槽位並展開背包面板
+  if (!lockedRosterSlot || lockedRosterSlot.type !== type || String(lockedRosterSlot.slot) !== String(slot)) {
+    lockedRosterSlot = null;
+    handleRosterSlotClick(type, slot);
+  }
 }
 
 function close2KSlotSelector() {
-  document.getElementById('myteamCardDrawer').classList.add('hidden');
+  cancelRosterLock();
 }
 
-function filter2KDrawer(filterType) {
-  current2KFilter = filterType;
-  render2KDrawerCards();
-}
-
-function render2KDrawerCards() {
-  const container = document.getElementById('myteamCardGrid');
-  if (!container) return;
-
-  const btnAll = document.getElementById('btnFilter2K_ALL');
-  const btnFit = document.getElementById('btnFilter2K_FIT');
-  if (btnAll && btnFit) {
-    btnAll.className = current2KFilter === 'ALL' ? "px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-bold" : "px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300";
-    btnFit.className = current2KFilter === 'FIT' ? "px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-bold" : "px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300";
-  }
-
-  // 取得背包去重最高星級卡
-  let cards = getHighestStarCards();
-
-  // 若在先發選人且選了 FIT，只顯示能打該位置的球員
-  if (current2KTarget.type === 'starter' && current2KFilter === 'FIT') {
-    cards = cards.filter(c => c.positions && c.positions.includes(current2KTarget.slot));
-  }
-
-  // 排序：先發按該位置最適 OVR 降序
-  cards.sort((a, b) => (b.ovr || b.baseOvr) - (a.ovr || a.baseOvr));
-
-  if (cards.length === 0) {
-    container.innerHTML = `<div class="col-span-full py-10 text-center text-xs text-slate-500">沒有符合條件的可用球員</div>`;
-    return;
-  }
-
-  container.innerHTML = cards.map(c => {
-    const isEquippedInThisSlot = (current2KTarget.type === 'starter' && state.startingLineup[current2KTarget.slot]?.cardId === c.cardId) ||
-                                (current2KTarget.type === 'bench' && state.benchLineup[current2KTarget.slot]?.cardId === c.cardId);
-
-    const isNatural = current2KTarget.type === 'starter' ? c.positions.includes(current2KTarget.slot) : true;
-
-    return `
-      <div onclick="selectCardIntoSlot('${c.cardId}')" 
-           class="bg-slate-950 border ${isEquippedInThisSlot ? 'border-amber-400 bg-amber-500/10' : getRarityBorder(c.rarity)} hover:border-amber-400 p-2.5 rounded-2xl flex items-center gap-2.5 cursor-pointer transition active:scale-95 relative">
-        
-        <div class="w-11 h-11 rounded-full overflow-hidden bg-slate-900 flex-shrink-0 border border-slate-800">
-          <img src="${getPlayerImgUrl(c.nbaId)}" class="w-full h-full object-cover object-top" onerror="this.src='https://cdn.nba.com/headshots/nba/latest/1040x760/fallback.png'">
-        </div>
-
-        <div class="min-w-0 flex-1 text-left">
-          <div class="flex items-center gap-1 text-[9px] font-mono">
-            <span class="font-bold text-slate-400">${c.team}</span>
-            <span class="text-indigo-400 font-bold">${c.positions.join('/')}</span>
-            ${!isNatural ? '<span class="text-rose-400 font-bold">-5</span>' : ''}
-          </div>
-          <p class="text-xs font-black text-white truncate">${c.name}</p>
-          <div class="text-[10px] font-mono text-amber-400 font-bold">OVR ${c.ovr}</div>
-        </div>
-
-        ${isEquippedInThisSlot ? '<span class="text-xs font-bold text-amber-400">目前上陣</span>' : ''}
-      </div>
-    `;
-  }).join('');
-}
-
-// 點擊卡片立即插槽入陣
+// 點擊卡片立即插槽入陣 (若球員已在其他位置，支援自動智能互換)
 function selectCardIntoSlot(cardId) {
+  const targetSlot = lockedRosterSlot || current2KTarget;
+  if (!targetSlot) return;
+
   const card = (state.inventory || []).find(c => c && c.cardId === cardId);
   if (!card) return;
 
-  // 1. 如果此球員在別的先發或板凳上，先將他拔除
-  removePlayerFromEntireRoster(card.cardId);
+  const targetLabel = targetSlot.type === 'starter' ? targetSlot.slot : `替補 B${Number(targetSlot.slot) + 1}`;
+  const targetOldPlayer = targetSlot.type === 'starter' 
+    ? state.startingLineup[targetSlot.slot] 
+    : state.benchLineup[targetSlot.slot];
 
-  // 2. 插入目標卡槽
-  if (current2KTarget.type === 'starter') {
-    state.startingLineup[current2KTarget.slot] = card;
-  } else {
-    state.benchLineup[current2KTarget.slot] = card;
+  // 1. 檢查點選的球員是否已經在目前選擇的這個卡槽中
+  if (targetOldPlayer && targetOldPlayer.cardId === card.cardId) {
+    showToast(`${card.name} 已在此位置上陣`, "info");
+    cancelRosterLock();
+    return;
   }
 
-  playSound('click');
-  triggerHaptic('light');
+  // 2. 檢查該球員是否在其他先發或替補位置
+  let sourceStarterPos = null;
+  for (const pos of ['PG', 'SG', 'SF', 'PF', 'C']) {
+    if (state.startingLineup[pos]?.cardId === card.cardId) {
+      sourceStarterPos = pos;
+      break;
+    }
+  }
+  let sourceBenchIdx = -1;
+  if (Array.isArray(state.benchLineup)) {
+    sourceBenchIdx = state.benchLineup.findIndex(p => p && p.cardId === card.cardId);
+  }
 
-  close2KSlotSelector();
+  // 3. 處理換位或指派
+  if (sourceStarterPos !== null && targetOldPlayer) {
+    // 兩位球員互換位置 (先發與目標槽位)
+    state.startingLineup[sourceStarterPos] = targetOldPlayer;
+    if (targetSlot.type === 'starter') {
+      state.startingLineup[targetSlot.slot] = card;
+    } else {
+      state.benchLineup[targetSlot.slot] = card;
+    }
+    showToast(`🔄 互換成功！${card.name} (${targetLabel}) ⇄ ${targetOldPlayer.name} (${sourceStarterPos})`, "success");
+  } else if (sourceBenchIdx !== -1 && targetOldPlayer) {
+    // 兩位球員互換位置 (板凳與目標槽位)
+    state.benchLineup[sourceBenchIdx] = targetOldPlayer;
+    if (targetSlot.type === 'starter') {
+      state.startingLineup[targetSlot.slot] = card;
+    } else {
+      state.benchLineup[targetSlot.slot] = card;
+    }
+    showToast(`🔄 互換成功！${card.name} (${targetLabel}) ⇄ ${targetOldPlayer.name} (替補 B${sourceBenchIdx + 1})`, "success");
+  } else {
+    // 目標槽位為空，或球員未在陣容中：直接移除舊位並填入目標
+    removePlayerFromEntireRoster(card.cardId);
+    if (targetSlot.type === 'starter') {
+      state.startingLineup[targetSlot.slot] = card;
+    } else {
+      state.benchLineup[targetSlot.slot] = card;
+    }
+    showToast(` 已將 ${card.name} 指派至 ${targetLabel}！`, "success");
+  }
+
+  playSound('cardFlip');
+  triggerHaptic('medium');
+
+  cancelRosterLock();
   saveGame();
   renderAll();
 }
